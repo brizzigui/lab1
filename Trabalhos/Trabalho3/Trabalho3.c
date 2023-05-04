@@ -56,10 +56,39 @@ void dados(int numeroDado){
     }
 }
 
+void modoPlayerPlayer();
+void modoPlayerNPC();
+
 char temp;
 //apenas para evitar bugs no scanf
 
-char instrucoes(){
+void modoDeJogo(){
+    char modo;
+
+    printf("Voce pode selecionar o modo de jogo:\n");
+    printf("Digite a letra correspondente.\n\n\n");
+    printf("P - Player x Player (2 jogadores)\n");
+    printf("C - Player x Computer (1 jogador, contra a maquina)\n");
+
+    do{
+        printf("\n\nSua escolha: ");
+        scanf(" %c", &modo);
+        if (modo != 'p' && modo != 'P' && modo != 'c' && modo != 'C'){
+            printf("Parece que voce nao inseriu um modo de jogo valido. Tente novamente!\n");
+        }
+
+    }while(modo != 'p' && modo != 'P' && modo != 'c' && modo != 'C');
+    
+    if (modo == 'p' || modo == 'P'){
+        modoPlayerPlayer();
+    }
+
+    else{
+        modoPlayerNPC();
+    }
+}
+
+void instrucoes(){
     dados(6);
     printf("VERMELHO E BRANCO\n");
     printf("Pronto para testar a sorte?\n");
@@ -89,32 +118,17 @@ char instrucoes(){
     do{
         printf("\nVoce entendeu as instrucoes? (Digite 's' para sim e 'n' para nao): ");
         scanf(" %c", &entendeuInstrucoes);
+
         if (entendeuInstrucoes != 's' && entendeuInstrucoes != 'S'){
             printf("Entendo... Volte quando a sorte estiver convosco!\n\n\n");
             printf("---------------------");
         }
+
     }while(entendeuInstrucoes != 's' && entendeuInstrucoes != 'S');
 
     system("clear || cls");
 
-
-    char modoDeJogo;
-
-    printf("Voce pode selecionar o modo de jogo:\n");
-    printf("Digite a letra correspondente.\n\n\n");
-    printf("P - Player x Player (2 jogadores)\n");
-    printf("C - Player x Computer (1 jogador, contra a maquina)\n");
-
-    do{
-        printf("\n\nSua escolha: ");
-        scanf(" %c", &modoDeJogo);
-        if (modoDeJogo != 'p' && modoDeJogo != 'P' && modoDeJogo != 'c' && modoDeJogo != 'C'){
-            printf("Parece que voce nao inseriu um modo de jogo valido. Tente novamente!\n");
-        }
-    }while(modoDeJogo != 'p' && modoDeJogo != 'P' && modoDeJogo != 'c' && modoDeJogo != 'C');
-    
-    return modoDeJogo;
-    
+    modoDeJogo();
 
 }
 
@@ -181,12 +195,13 @@ int turnoDoJogador(int pontTotal){
     }
 }
 
-int turnoDoNPC(int pontTotal){
+int turnoDoNPC(int pontTotal, int pontOponente){
     int pontRodada = 0, dadoBRANCO, dadoVERMELHO, pontAtual;
-    if (pontTotal > 15){
+    if (pontTotal > 15 || pontOponente > 21){
         printf("O computador escolheu passar a vez.\n");
         return pontRodada;
         //se a pontuacao esta proxima de passar 21, nao arrisca jogar novamente
+        //nao joga se a partida ja esta ganha/empatada
     }
 
     else{
@@ -228,7 +243,7 @@ int turnoDoNPC(int pontTotal){
 
 }
 
-int modoPlayerPlayer(){
+void modoPlayerPlayer(){
     
     char continuarJogando;
     int pontJogador1 = 0, pontJogador2 = 0;
@@ -242,75 +257,73 @@ int modoPlayerPlayer(){
     system("clear || cls");
 
     printf("Boa sorte, %s e %s...\n", nomeJogador1, nomeJogador2);
-
-    do{
         
-        for (int rodada = 1; rodada <=3; rodada++){
-            printf("\n ------------------------- \n");
-            printf("| Rodada n.%d              |\n", rodada);
-            printf("| Vez de %-16s |\n", nomeJogador1);
-            printf(" ------------------------- \n");
-            printf("Sua pontuacao ate agora: %d\n", pontJogador1);
-            pontJogador1 += turnoDoJogador(pontJogador1);
+    for (int rodada = 1; rodada <=3; rodada++){
+        printf("\n ------------------------- \n");
+        printf("| Rodada n.%d              |\n", rodada);
+        printf("| Vez de %-16s |\n", nomeJogador1);
+        printf(" ------------------------- \n");
+        printf("Sua pontuacao ate agora: %d\n", pontJogador1);
+        pontJogador1 += turnoDoJogador(pontJogador1);
 
-            system("clear || cls");
+        system("clear || cls");
 
-            printf("\n ------------------------- \n");
-            printf("| Rodada n.%d              |\n", rodada);
-            printf("| Vez de %-16s |\n", nomeJogador2);
-            printf(" ------------------------- \n");
-            printf("Sua pontuacao ate agora: %d\n", pontJogador2);
-            pontJogador2 += turnoDoJogador(pontJogador2);
+        printf("\n ------------------------- \n");
+        printf("| Rodada n.%d              |\n", rodada);
+        printf("| Vez de %-16s |\n", nomeJogador2);
+        printf(" ------------------------- \n");
+        printf("Sua pontuacao ate agora: %d\n", pontJogador2);
+        pontJogador2 += turnoDoJogador(pontJogador2);
 
-            system("clear || cls");
-            
+        system("clear || cls");
+        
+    }
+
+    if (pontJogador1 > 21 && pontJogador2 > 21){
+        printf("Empate!\n Apos 3 jogadas, %s somou %d pontos e %s somou %d pontos.\n", nomeJogador1, pontJogador1, nomeJogador2, pontJogador2);
+        printf("Como ambas essas pontuacoes surpassam 21 pontos, a partida terminou em empate.\n");
+    }
+
+    else if (pontJogador1 <= 21 && pontJogador2 <= 21){
+        if(fabs(21-pontJogador1) < fabs(21-pontJogador2)){
+            printf("Parabens, %s!\nVoce foi o Vencedor dessa partida com %d pontos, ficando mais perto de 21!\n", nomeJogador1, pontJogador1);
+            printf("Mais sorte na proxima, %s... Voce fez %d pontos.\n", nomeJogador2, pontJogador2);
         }
-
-        if (pontJogador1 > 21 && pontJogador2 > 21){
-            printf("Empate! Apos 3 jogadas, %s somou %d pontos e %s somou %d pontos.\n", nomeJogador1, pontJogador1, nomeJogador2, pontJogador2);
-            printf("Como ambas essas pontuacoes surpassam 21 pontos, a partida terminou em empate.\n");
+        else if(fabs(21-pontJogador1) > fabs(21-pontJogador2)){
+            printf("Parabens, %s!\nVoce foi o Vencedor dessa partida com %d pontos, ficando mais perto de 21!\n", nomeJogador2, pontJogador2);
+            printf("Mais sorte na proxima, %s... Voce fez %d pontos.\n", nomeJogador1, pontJogador1);
         }
+        else{
+            printf("Empate!\nApos 3 jogadas, %s somou %d pontos e %s somou %d pontos.\n", nomeJogador1, pontJogador1, nomeJogador2, pontJogador2);
+            printf("Sendo ambas as pontuacoes iguais, a partida terminou em empate.\n");
+        }
+    }
 
-        else if (pontJogador1 <= 21 && pontJogador2 <= 21){
-            if(fabs(21-pontJogador1) < fabs(21-pontJogador2)){
-                printf("Parabens, %s! Voce foi o Vencedor dessa partida com %d pontos!\n", nomeJogador1, pontJogador1);
-                printf("Mais sorte na proxima, %s... Voce fez %d pontos.\n", nomeJogador2, pontJogador2);
-            }
-            else if(fabs(21-pontJogador1) > fabs(21-pontJogador2)){
-                printf("Parabens, %s! Voce foi o Vencedor dessa partida com %d pontos!\n", nomeJogador2, pontJogador2);
-                printf("Mais sorte na proxima, %s... Voce fez %d pontos.\n", nomeJogador1, pontJogador1);
-            }
-
-            else{
-                printf("Empate! Apos 3 jogadas, %s somou %d pontos e %s somou %d pontos.\n", nomeJogador1, pontJogador1, nomeJogador2, pontJogador2);
-                printf("Como essas pontuacoes sao iguais, a partida terminou em empate.\n");
-            }
+    else{
+        if(pontJogador2 > 21){
+            printf("Parabens, %s!\nVoce foi o Vencedor dessa partida com %d pontos!\n", nomeJogador1, pontJogador1);
+            printf("Mais sorte na proxima, %s... Voce fez %d pontos e passou de 21.\n", nomeJogador2, pontJogador2);
         }
 
         else{
-            if(pontJogador2 > 21){
-                printf("Parabens, %s! Voce foi o Vencedor dessa partida com %d pontos!\n", nomeJogador1, pontJogador1);
-                printf("Mais sorte na proxima, %s... Voce fez %d pontos.\n", nomeJogador2, pontJogador2);
-            }
-
-            else{
-                printf("Parabens, %s! Voce foi o Vencedor dessa partida com %d pontos!\n", nomeJogador2, pontJogador2);
-                printf("Mais sorte na proxima, %s... Voce fez %d pontos.\n", nomeJogador1, pontJogador1);
-            }
+            printf("Parabens, %s!\nVoce foi o Vencedor dessa partida com %d pontos!\n", nomeJogador2, pontJogador2);
+            printf("Mais sorte na proxima, %s... Voce fez %d pontos e passou de 21.\n", nomeJogador1, pontJogador1);
         }
-        
+    }
 
+    if (continuarJogando == 's' || continuarJogando == 'S');{
         printf("\n\nVoce quer jogar novamente? Digite 's' para sim e 'n' para nao: ");
         scanf(" %c", &continuarJogando);
         system("clear || cls");
-
-    }while(continuarJogando == 's' || continuarJogando == 'S');
+        modoDeJogo();
+    }
+    
 }
 
-int modoPlayerNPC(){
+void modoPlayerNPC(){
     char continuarJogando;
     int pontJogador1 = 0, pontNPC = 0;
-    char nomeJogador1[32];
+    char nomeJogador1[16];
 
     printf("Insira o nome do Jogador 1: ");
     scanf("%s", &nomeJogador1);
@@ -319,80 +332,73 @@ int modoPlayerNPC(){
 
     printf("Boa sorte, %s...\n", nomeJogador1);
 
-    do{
+    for (int rodada = 1; rodada <=3; rodada++){
+        printf("\n ------------------------- \n");
+        printf("| Rodada n.%d              |\n", rodada);
+        printf("| Vez de %-16s |\n", nomeJogador1);
+        printf(" ------------------------- \n");
+        printf("Sua pontuacao ate agora: %d\n", pontJogador1);
+        pontJogador1 += turnoDoJogador(pontJogador1);
+
+        system("clear || cls");
+
+        printf("\n --------------------\n");
+        printf("| Rodada n.%d         |\n", rodada);
+        printf("| Vez do Computador. |\n");
+        printf(" --------------------\n");
+        printf("Pontuacao do Computador ate agora: %d\n", pontNPC);
+        pontNPC += turnoDoNPC(pontNPC, pontJogador1);
+
+        system("clear || cls");
         
-        for (int rodada = 1; rodada <=3; rodada++){
-            printf("\n ------------------------- \n");
-            printf("| Rodada n.%d              |\n", rodada);
-            printf("| Vez de %-16s |\n", nomeJogador1);
-            printf(" ------------------------- \n");
-            printf("Sua pontuacao ate agora: %d\n", pontJogador1);
-            pontJogador1 += turnoDoJogador(pontJogador1);
+    }
 
-            system("clear || cls");
+    if (pontJogador1 > 21 && pontNPC > 21){
+        printf("Empate!\nApos 3 jogadas, %s somou %d pontos e o computador somou %d pontos.\n", nomeJogador1, pontJogador1, pontNPC);
+        printf("Como ambas essas pontuacoes surpassam 21 pontos, a partida terminou em empate.\n");
+    }
 
-            printf("\n --------------------\n");
-            printf("| Rodada n.%d         |\n", rodada);
-            printf("| Vez do Computador. |\n");
-            printf(" --------------------\n");
-            printf("Pontuacao do Computador ate agora: %d\n", pontNPC);
-            pontNPC += turnoDoNPC(pontNPC);
-
-            system("clear || cls");
-            
+    else if (pontJogador1 <= 21 && pontNPC <= 21){
+        if(fabs(21-pontJogador1) < fabs(21-pontNPC)){
+            printf("Parabens, %s!\nVoce foi o Vencedor dessa partida com %d pontos, ficando mais perto de 21!\n", nomeJogador1, pontJogador1);
+            printf("O computador fez %d pontos.\n", pontNPC);
         }
-
-        if (pontJogador1 > 21 && pontNPC > 21){
-            printf("Empate! Apos 3 jogadas, %s somou %d pontos e o computador somou %d pontos.\n", nomeJogador1, pontJogador1, pontNPC);
-            printf("Como ambas essas pontuacoes surpassam 21 pontos, a partida terminou em empate.\n");
-        }
-
-        else if (pontJogador1 <= 21 && pontNPC <= 21){
-            if(fabs(21-pontJogador1) < fabs(21-pontNPC)){
-                printf("Parabens, %s! Voce foi o Vencedor dessa partida com %d pontos!\n", nomeJogador1, pontJogador1);
-                printf("O computador fez %d pontos.\n", pontNPC);
-            }
-            else if(fabs(21-pontJogador1) > fabs(21-pontNPC)){
-                printf("O computador foi o Vencedor dessa partida com %d pontos!\n", pontNPC);
-                printf("Mais sorte na proxima, %s... Voce fez %d pontos.\n", nomeJogador1, pontJogador1);
-            }
-
-            else{
-                printf("Empate! Apos 3 jogadas, %s somou %d pontos e o computador somou %d pontos.\n", nomeJogador1, pontJogador1, pontNPC);
-                printf("Como essas pontuacoes sao iguais, a partida terminou em empate.\n");
-            }
+        else if(fabs(21-pontJogador1) > fabs(21-pontNPC)){
+            printf("Perdeu! :(\n");
+            printf("O computador foi o Vencedor dessa partida com %d pontos, ficando mais perto de 21!\n", pontNPC);
+            printf("Mais sorte na proxima, %s... Voce fez %d pontos.\n", nomeJogador1, pontJogador1);
         }
 
         else{
-            if(pontNPC > 21){
-                printf("Parabens, %s! Voce foi o Vencedor dessa partida com %d pontos!\n", nomeJogador1, pontJogador1);
-                printf("O computador fez %d pontos.\n", pontNPC);
-            }
-
-            else{
-                printf("O computador foi o Vencedor dessa partida com %d pontos!\n", pontNPC);
-                printf("Mais sorte na proxima, %s... Voce fez %d pontos.\n", nomeJogador1, pontJogador1);
-            }
+            printf("Empate!\nApos 3 jogadas, %s somou %d pontos e o computador somou %d pontos.\n", nomeJogador1, pontJogador1, pontNPC);
+            printf("Como essas pontuacoes sao iguais, a partida terminou em empate.\n");
         }
-        
+    }
 
+    else{
+        if(pontNPC > 21){
+            printf("Parabens, %s!\nVoce foi o Vencedor dessa partida com %d pontos!\n", nomeJogador1, pontJogador1);
+            printf("O computador fez %d pontos e passou de 21.\n", pontNPC);
+        }
+
+        else{
+            printf("Perdeu! :(\n");
+            printf("O computador foi o Vencedor dessa partida com %d pontos!\n", pontNPC);
+            printf("Mais sorte na proxima, %s... Voce fez %d pontos e passou de 21.\n", nomeJogador1, pontJogador1);
+        }
+    }
+    
+    if(continuarJogando == 's' || continuarJogando == 'S'){
         printf("\n\nVoce quer jogar novamente? Digite 's' para sim e 'n' para nao: ");
         scanf(" %c", &continuarJogando);
         system("clear || cls");
-
-    }while(continuarJogando == 's' || continuarJogando == 'S');
+    }
+        
 }
 
 int main(){
     srand(time(NULL));
-    char modoDeJogo = instrucoes();
-    if (modoDeJogo == 'p' || modoDeJogo == 'P'){
-        modoPlayerPlayer();
-    }
-
-    else{
-        modoPlayerNPC();
-    }
+    instrucoes();
 
     dados(6);
     printf("Obrigado por jogar!\n");
