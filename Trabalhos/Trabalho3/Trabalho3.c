@@ -174,8 +174,9 @@ int turnoDoNPC(int pontTotal, int pontOponente){
         printf("O computador escolheu passar a vez.\n");
         return pontRodada;
         //se a pontuacao esta proxima de passar 21, nao arrisca jogar novamente
-        //exceto se o outro jogador ja esta melhor.
-        //ademais, nao joga se a partida ja esta ganha/empatada
+        //exceto se o outro jogador ja esta melhor e o computador precisa jogar para nao perder.
+
+        //ademais, nao joga se a partida ja esta ganha/empatada por o oponente ter passado dos 21 pts.
     }
 
     else{
