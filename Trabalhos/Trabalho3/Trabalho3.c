@@ -65,7 +65,7 @@ void interrompeParaLer(){
 
 void instrucoes(){
     dados(6);
-    printf("VERMELHO E BRANCO\n");
+    printf("DADO DE SANGUE\n");
     printf("Pronto para testar a sorte?\n");
     dados(6);
 
@@ -77,7 +77,7 @@ void instrucoes(){
     printf("\nInstrucoes do jogo:\n\n");
     printf("-> Os jogadores possuem a sua disposicao 2 dados: um branco e um vermelho.\n");
     printf("-> A cada jogada, o jogador tem a opcao de rolar os dados ou passar a vez.\n");
-    printf("-> Se optar por rolar os dados, devera:");
+    printf("-> Se optar por rolar os dados, devera:\n");
     printf("   - Iniciar rolando o dado BRANCO, cujo valor soma-se a pontuacao do jogador.\n");
     printf("   - Em seguida, o jogador devera rolar o dado VERMELHO.\n");
     printf("   - Se o valor do dado VERMELHO for 6, o dobro desse valor sera adicionado a pontuacao do jogador.\n");
@@ -170,11 +170,12 @@ int turnoDoJogador(int pontTotal){
 
 int turnoDoNPC(int pontTotal, int pontOponente){
     int pontRodada = 0, dadoBRANCO, dadoVERMELHO, pontAtual;
-    if (pontTotal > 15 || pontOponente > 21){
+    if (pontTotal > 15 && pontOponente < pontTotal || pontOponente > 21){
         printf("O computador escolheu passar a vez.\n");
         return pontRodada;
         //se a pontuacao esta proxima de passar 21, nao arrisca jogar novamente
-        //nao joga se a partida ja esta ganha/empatada
+        //exceto se o outro jogador ja esta melhor.
+        //ademais, nao joga se a partida ja esta ganha/empatada
     }
 
     else{
@@ -257,11 +258,11 @@ void modoPlayerPlayer(){
     }
 
     else if (pontJogador1 <= 21 && pontJogador2 <= 21){
-        if(fabs(21-pontJogador1) < fabs(21-pontJogador2)){
+        if(21-pontJogador1 < 21-pontJogador2){
             printf("Parabens, %s!\nVoce foi o Vencedor dessa partida com %d pontos, ficando mais perto de 21!\n", nomeJogador1, pontJogador1);
             printf("Mais sorte na proxima, %s... Voce fez %d pontos.\n", nomeJogador2, pontJogador2);
         }
-        else if(fabs(21-pontJogador1) > fabs(21-pontJogador2)){
+        else if(21-pontJogador1 > 21-pontJogador2){
             printf("Parabens, %s!\nVoce foi o Vencedor dessa partida com %d pontos, ficando mais perto de 21!\n", nomeJogador2, pontJogador2);
             printf("Mais sorte na proxima, %s... Voce fez %d pontos.\n", nomeJogador1, pontJogador1);
         }
@@ -323,11 +324,11 @@ void modoPlayerNPC(){
     }
 
     else if (pontJogador1 <= 21 && pontNPC <= 21){
-        if(fabs(21-pontJogador1) < fabs(21-pontNPC)){
+        if(21-pontJogador1 < 21-pontNPC){
             printf("Parabens, %s!\nVoce foi o Vencedor dessa partida com %d pontos, ficando mais perto de 21!\n", nomeJogador1, pontJogador1);
             printf("O computador fez %d pontos.\n", pontNPC);
         }
-        else if(fabs(21-pontJogador1) > fabs(21-pontNPC)){
+        else if(21-pontJogador1 > 21-pontNPC){
             printf("Perdeu! :(\n");
             printf("O computador foi o Vencedor dessa partida com %d pontos, ficando mais perto de 21!\n", pontNPC);
             printf("Mais sorte na proxima, %s... Voce fez %d pontos.\n", nomeJogador1, pontJogador1);
@@ -401,4 +402,6 @@ int main(){
     
     printf("\n\n\n");
     printf("Por Guilherme Brizzi");
+
+    interrompeParaLer();
 }
