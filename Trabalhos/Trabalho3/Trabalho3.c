@@ -56,37 +56,12 @@ void dados(int numeroDado){
     }
 }
 
-void modoPlayerPlayer();
-void modoPlayerNPC();
-
-char temp;
-//apenas para evitar bugs no scanf
-
-void modoDeJogo(){
-    char modo;
-
-    printf("Voce pode selecionar o modo de jogo:\n");
-    printf("Digite a letra correspondente.\n\n\n");
-    printf("P - Player x Player (2 jogadores)\n");
-    printf("C - Player x Computer (1 jogador, contra a maquina)\n");
-
-    do{
-        printf("\n\nSua escolha: ");
-        scanf(" %c", &modo);
-        if (modo != 'p' && modo != 'P' && modo != 'c' && modo != 'C'){
-            printf("Parece que voce nao inseriu um modo de jogo valido. Tente novamente!\n");
-        }
-
-    }while(modo != 'p' && modo != 'P' && modo != 'c' && modo != 'C');
+void interrompeParaLer(){
+    char temp;
+    scanf(" %c", &temp);
     
-    if (modo == 'p' || modo == 'P'){
-        modoPlayerPlayer();
-    }
-
-    else{
-        modoPlayerNPC();
-    }
 }
+
 
 void instrucoes(){
     dados(6);
@@ -95,18 +70,18 @@ void instrucoes(){
     dados(6);
 
     printf("\nDigite C para continuar.\n");
-    scanf(" %c", &temp);
+    interrompeParaLer();
 
     system("clear || cls");
 
     printf("\nInstrucoes do jogo:\n\n");
-    printf("-> Os jogadores possuem a sua disposição 2 dados: um branco e um vermelho.\n");
-    printf("-> A cada jogada, o jogador tem a opção de rolar os dados ou passar a vez.\n");
+    printf("-> Os jogadores possuem a sua disposicao 2 dados: um branco e um vermelho.\n");
+    printf("-> A cada jogada, o jogador tem a opcao de rolar os dados ou passar a vez.\n");
     printf("-> Se optar por rolar os dados, devera:");
     printf("   - Iniciar rolando o dado BRANCO, cujo valor soma-se a pontuacao do jogador.\n");
     printf("   - Em seguida, o jogador devera rolar o dado VERMELHO.\n");
     printf("   - Se o valor do dado VERMELHO for 6, o dobro desse valor sera adicionado a pontuacao do jogador.\n");
-    printf("   - Sendo outro valor, simplesmente o adicionara a pontuacao do jogodador.\n");
+    printf("   - Sendo outro valor, simplesmente o adicionara a pontuacao do jogador.\n");
     printf("-> Cada partida compoe-se por 3 jogadas, em que o jogador alterna turnos com outro jogador, ou com o Computador.\n");
     printf("-> Ganha a partida o jogador que, tendo feito menos de 21 pontos, estiver mais perto de 21.\n");
     printf("   - Se ambos estiverem a mesma distancia de 21, a partida empata.\n");
@@ -127,8 +102,6 @@ void instrucoes(){
     }while(entendeuInstrucoes != 's' && entendeuInstrucoes != 'S');
 
     system("clear || cls");
-
-    modoDeJogo();
 
 }
 
@@ -167,7 +140,7 @@ int turnoDoJogador(int pontTotal){
         printf("A sua pontuacao agora equivale a %d (%d + %d).\n", pontAtual, pontTotal, dadoBRANCO);
 
         printf("Digite P para lancar o proximo dado: ");
-        scanf(" %c", &temp);
+        interrompeParaLer();
 
 
         printf("\nRolando dado VERMELHO!\n");
@@ -188,7 +161,7 @@ int turnoDoJogador(int pontTotal){
         }
        
         printf("Digite F para finalizar sua jogada: ");
-        scanf(" %c", &temp);
+        interrompeParaLer();
 
         return pontRodada;
         
@@ -237,7 +210,7 @@ int turnoDoNPC(int pontTotal, int pontOponente){
     }
 
     printf("Digite F para finalizar o turno do computador: ");
-    scanf(" %c", &temp);
+    interrompeParaLer();
 
     return pontRodada;
 
@@ -245,7 +218,6 @@ int turnoDoNPC(int pontTotal, int pontOponente){
 
 void modoPlayerPlayer(){
     
-    char continuarJogando;
     int pontJogador1 = 0, pontJogador2 = 0;
     char nomeJogador1[16], nomeJogador2[16];
 
@@ -310,18 +282,10 @@ void modoPlayerPlayer(){
             printf("Mais sorte na proxima, %s... Voce fez %d pontos e passou de 21.\n", nomeJogador1, pontJogador1);
         }
     }
-
-    if (continuarJogando == 's' || continuarJogando == 'S');{
-        printf("\n\nVoce quer jogar novamente? Digite 's' para sim e 'n' para nao: ");
-        scanf(" %c", &continuarJogando);
-        system("clear || cls");
-        modoDeJogo();
-    }
     
 }
 
 void modoPlayerNPC(){
-    char continuarJogando;
     int pontJogador1 = 0, pontNPC = 0;
     char nomeJogador1[16];
 
@@ -388,17 +352,48 @@ void modoPlayerNPC(){
         }
     }
     
-    if(continuarJogando == 's' || continuarJogando == 'S'){
+        
+}
+
+void modoDeJogo(){
+    char modo;
+    char continuarJogando;
+
+    do{
+        printf("Voce pode selecionar o modo de jogo:\n");
+        printf("Digite a letra correspondente.\n\n\n");
+        printf("P - Player x Player (2 jogadores)\n");
+        printf("C - Player x Computer (1 jogador, contra a maquina)\n");
+
+        do{
+            printf("\n\nSua escolha: ");
+            scanf(" %c", &modo);
+            if (modo != 'p' && modo != 'P' && modo != 'c' && modo != 'C'){
+                printf("Parece que voce nao inseriu um modo de jogo valido. Tente novamente!\n");
+            }
+
+        }while(modo != 'p' && modo != 'P' && modo != 'c' && modo != 'C');
+        
+        if (modo == 'p' || modo == 'P'){
+            modoPlayerPlayer();
+        }
+
+        else{
+            modoPlayerNPC();
+        }
+
         printf("\n\nVoce quer jogar novamente? Digite 's' para sim e 'n' para nao: ");
         scanf(" %c", &continuarJogando);
         system("clear || cls");
-    }
-        
+
+    }while(continuarJogando == 's' || continuarJogando == 'S');
+    
 }
 
 int main(){
     srand(time(NULL));
     instrucoes();
+    modoDeJogo();
 
     dados(6);
     printf("Obrigado por jogar!\n");
