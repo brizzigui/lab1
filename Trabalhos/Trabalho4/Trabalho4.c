@@ -1,7 +1,4 @@
 #include <stdio.h>
-#include <math.h>
-#include <stdlib.h>
-#include <time.h>
 
 void imprimir_notas(int indice_maior, int *ocorrencia, double *lista_notas, int *repetido, int n){
     printf("As notas e suas frequencias foram:\n\n");
@@ -14,7 +11,7 @@ void imprimir_notas(int indice_maior, int *ocorrencia, double *lista_notas, int 
                 printf("-> %.2lf ocorre %d vezes.\n", lista_notas[i], ocorrencia[i]);
         }
 
-    printf("A nota mais frequente equivale a %.2lf, com %d ocorrencias.", lista_notas[indice_maior], ocorrencia[indice_maior]);
+    printf("\nA nota mais frequente equivale a %.2lf, com %d ocorrencias.\n", lista_notas[indice_maior], ocorrencia[indice_maior]);
         
 }
 
@@ -43,7 +40,7 @@ int maior_ocorrencia(int *ocorrencia, double *lista_notas, int n){
 }
 
 
-int comparar_notas(double *lista_notas, int n){
+void comparar_notas(double *lista_notas, int n){
 
     int ocorrencia[n];
     int repetido[n];
@@ -68,7 +65,7 @@ int comparar_notas(double *lista_notas, int n){
 }
 
 
-int pegar_notas(int n){
+void pegar_notas(int n){
 
     double lista_notas[n];
     printf("Digite %d notas:\n", n);
@@ -102,5 +99,7 @@ int main(){
 
     int qnt_notas = pegar_qnt();
     pegar_notas(qnt_notas);
+
+    return 0;
 
 }
