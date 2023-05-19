@@ -27,8 +27,20 @@ char escolha_do_usuario(){
 
     char escolha;
     printf("Qual orbita da matriz voce quer rotacionar?\n");
-    printf("Digite 'E' para externa, 'M' para media e 'I' para interna: ");
-    scanf(" %c", &escolha);
+
+    do
+    {
+        printf("Digite 'E' para externa, 'M' para media e 'I' para interna: ");
+        scanf(" %c", &escolha);
+
+        if (escolha != 'e' && escolha != 'E' && escolha != 'm' && escolha != 'M' && escolha != 'i' && escolha != 'I' && escolha != '0')
+        {
+            printf("Opcao invalida. Tente novamente.");
+        }
+        
+
+    }while(escolha != 'e' && escolha != 'E' && escolha != 'm' && escolha != 'M' && escolha != 'i' && escolha != 'I' && escolha != '0');
+    
 
     return escolha;
 
