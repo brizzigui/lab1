@@ -1,7 +1,4 @@
 #include <stdio.h>
-#include <math.h>
-#include <stdlib.h>
-#include <time.h>
 
 #define TAM 7
 
