@@ -30,12 +30,12 @@ char escolha_do_usuario(){
 
     do
     {
-        printf("Digite 'E' para externa, 'M' para media e 'I' para interna: ");
+        printf("Digite 'E' para externa, 'M' para media e 'I' para interna (ou '0' para parar): ");
         scanf(" %c", &escolha);
 
         if (escolha != 'e' && escolha != 'E' && escolha != 'm' && escolha != 'M' && escolha != 'i' && escolha != 'I' && escolha != '0')
         {
-            printf("Opcao invalida. Tente novamente.");
+            printf("Opcao invalida. Tente novamente.\n");
         }
         
 
