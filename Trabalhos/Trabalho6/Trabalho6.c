@@ -8,6 +8,7 @@
 int ler_e_comparar(){
 
     int qnt_palavras;
+    int cumpre = 1;
     printf("Quantas palavras compoem a sequencia? ");
     scanf("%d", &qnt_palavras);
 
@@ -26,35 +27,31 @@ int ler_e_comparar(){
 
         if (tamanho_auxiliar != tamanho_palavra)
         {
-            return 0;
+            cumpre = 0;
         }
         
         int diferencas = 0;
 
-        for (int letra_auxiliar = 0; letra_auxiliar < tamanho_auxiliar; letra_auxiliar++)
+        for (int letra = 0; letra < tamanho_auxiliar; letra++)
         {
-            for (int letra_palavra = 0; letra_palavra < tamanho_palavra; letra_palavra++)
-            {   
 
-                if (auxiliar[letra_auxiliar] != palavra[letra_palavra])
-                {
-                    diferencas++;
-                }
+            if (auxiliar[letra] != palavra[letra])
+            {
+                diferencas++;
+            }
 
-                if (diferencas >= 2)
-                {
-                    return 0;
-                }
+            if (diferencas >= 2)
+            {
+                cumpre = 0;
+            }
                 
-                
-            } 
         }
 
         strcpy(auxiliar, palavra);
 
     }
 
-    return 1;
+    return cumpre;
   
 }
 
