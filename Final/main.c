@@ -13,6 +13,16 @@
 #define LARGURA_TELA 1920
 #define ALTURA_TELA 1080
 
+
+#define LARG_BOTAO_PADRAO 350
+#define ALT_BOTAO_PADRAO 125
+#define OFFSET_BOTAO_PADRAO_X 20
+#define OFFSET_BOTAO_PADRAO_Y 20
+
+#define BRANCO al_map_rgb(255, 255, 255)
+#define PRETO al_map_rgb(0, 0, 0)
+#define AZUL al_map_rgb(3, 78, 252)
+
 void inicializar()
 {
     al_init();
@@ -23,16 +33,169 @@ void inicializar()
     al_init_ttf_addon();
 }
 
+int botao_padrao(int x, int y, ALLEGRO_BITMAP* imagem_botao, float x_mouse, float y_mouse, int click)
+{
+    float x0 = x;
+    float x1 = x0 + LARG_BOTAO_PADRAO;
+    float y0 = y;
+    float y1 = y0 + ALT_BOTAO_PADRAO;
+
+    al_draw_bitmap(imagem_botao, x0, y0, 0);
+    if (x_mouse >= x0 && x_mouse <= x1 && y_mouse >= y0 && y_mouse <= y1 && click)
+    {
+        return 1;
+    }
+
+    return 0;
+}
+
+char menu(ALLEGRO_DISPLAY* display)
+{
+    ALLEGRO_FONT* font_2p_regular_72 = al_load_ttf_font("media/fonts/PressStart2P-regular.ttf", 72, 0);
+    ALLEGRO_TIMER* timer_fps = al_create_timer(1.0 / 60.0);
+
+    ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
+    al_register_event_source(queue, al_get_mouse_event_source());
+    al_register_event_source(queue, al_get_keyboard_event_source());
+    al_register_event_source(queue, al_get_display_event_source(display));
+    al_register_event_source(queue, al_get_timer_event_source(timer_fps));
+    ALLEGRO_EVENT event;
+
+    ALLEGRO_BITMAP* botao_jogar = al_load_bitmap("media/images/buttons/jogar.png");
+    ALLEGRO_BITMAP* botao_restaurar = al_load_bitmap("media/images/buttons/restaurar.png");
+    ALLEGRO_BITMAP* botao_record = al_load_bitmap("media/images/buttons/record.png");
+    ALLEGRO_BITMAP* botao_help = al_load_bitmap("media/images/buttons/help.png");
+    ALLEGRO_BITMAP* botao_sair = al_load_bitmap("media/images/buttons/sair.png");
+
+    ALLEGRO_MOUSE_STATE state;
+
+    float x_mouse = 0, y_mouse = 0;
+    int click = 0;
+
+    bool update = true;
+    al_start_timer(timer_fps);
+    while (1)
+    {
+        al_wait_for_event(queue, &event);
+        al_get_mouse_state(&state);
+
+        switch(event.type)
+        {
+            case ALLEGRO_EVENT_TIMER: 
+                update = true;
+                x_mouse = state.x;
+                y_mouse = state.y;
+                printf("%.2f, %.2f\n", x_mouse, y_mouse);
+                break;
+            
+            case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
+                x_mouse = state.x;
+                y_mouse = state.y;
+                click = 1;
+                printf("CLIQUE!\n");
+
+            /*case ALLEGRO_EVENT_KEY_DOWN:
+                if(event.keyboard.keycode == ALLEGRO_KEY_ENTER)
+                    return;
+                break;
+            */
+        }               
+        
+        al_clear_to_color(PRETO);
+        al_draw_text(font_2p_regular_72, BRANCO, LARGURA_TELA/2, ALTURA_TELA/4, ALLEGRO_ALIGN_CENTER, "DecaDado!");
+
+        bool ir_jogar = botao_padrao(LARGURA_TELA/2-LARG_BOTAO_PADRAO/2, 450, botao_jogar, x_mouse, y_mouse, click);
+        bool ir_restaurar = botao_padrao(LARGURA_TELA/2-LARG_BOTAO_PADRAO-OFFSET_BOTAO_PADRAO_X, 450+ALT_BOTAO_PADRAO+OFFSET_BOTAO_PADRAO_Y, botao_restaurar, x_mouse, y_mouse, click);
+        bool ir_record = botao_padrao(LARGURA_TELA/2+OFFSET_BOTAO_PADRAO_X, 450+ALT_BOTAO_PADRAO+OFFSET_BOTAO_PADRAO_Y, botao_record, x_mouse, y_mouse, click);
+        bool ir_help = botao_padrao(LARGURA_TELA/2-LARG_BOTAO_PADRAO-OFFSET_BOTAO_PADRAO_X, 450+(OFFSET_BOTAO_PADRAO_Y+ALT_BOTAO_PADRAO)*2, botao_help, x_mouse, y_mouse, click);
+        bool ir_sair = botao_padrao(LARGURA_TELA/2+OFFSET_BOTAO_PADRAO_X, 450+(OFFSET_BOTAO_PADRAO_Y+ALT_BOTAO_PADRAO)*2, botao_sair, x_mouse, y_mouse, click);
+        
+        if(ir_jogar)
+            return 'j';
+        else if(ir_restaurar)
+            return 'r';
+        else if(ir_record)
+            return 'd';
+        else if(ir_help)
+            return 'h';
+        else if(ir_sair)
+            return 's';
+
+        if (update)
+        {
+            al_flip_display();
+            update = false;
+        }
+        
+    }
+}
+
+void jogo(ALLEGRO_DISPLAY* display, int restaura)
+{
+
+    ALLEGRO_TIMER* timer_fps = al_create_timer(1.0 / 60.0);
+    ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
+    al_register_event_source(queue, al_get_keyboard_event_source());
+    al_register_event_source(queue, al_get_display_event_source(display));
+    al_register_event_source(queue, al_get_timer_event_source(timer_fps));
+    ALLEGRO_EVENT event;
+
+    ALLEGRO_BITMAP* matriz_background = al_load_bitmap("media/images/matriz.png");
+
+    bool update = true; 
+
+    al_start_timer(timer_fps);
+    while (1)
+    {
+        if(event.type == ALLEGRO_EVENT_TIMER)
+        {
+            update = true;
+        }       
+
+        else if (event.type == ALLEGRO_EVENT_KEY_DOWN)
+        {
+            if(event.keyboard.keycode == ALLEGRO_KEY_ENTER)
+                return;
+        }
+                            
+
+        al_wait_for_event(queue, &event);
+        al_clear_to_color(BRANCO);
+        al_draw_bitmap(matriz_background, 0, 0, 0);
+
+
+        if (update)
+        {
+            al_flip_display();
+            update = false;
+        }
+            
+    }
+}
+
+void record()
+{
+
+}
+
+void help()
+{
+
+}
+
+void sair()
+{
+    exit(0);
+}
+
 int main()
 {
     inicializar();
 
-    ALLEGRO_TIMER* timer_fps = al_create_timer(1.0 / 60.0);
-    ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
     al_set_new_display_flags(ALLEGRO_FULLSCREEN);
     ALLEGRO_DISPLAY* display = al_create_display(LARGURA_TELA, ALTURA_TELA);
 
-    ALLEGRO_FONT* font_play_regular_18 = al_load_ttf_font("media/fonts/Play-regular.ttf", 24, 0);
+    /*ALLEGRO_FONT* font_play_regular_18 = al_load_ttf_font("media/fonts/Play-regular.ttf", 24, 0);
     ALLEGRO_FONT* font_play_regular_24 = al_load_ttf_font("media/fonts/Play-regular.ttf", 24, 0);
     ALLEGRO_FONT* font_play_regular_36 = al_load_ttf_font("media/fonts/Play-regular.ttf", 36, 0);
     ALLEGRO_FONT* font_play_regular_48 = al_load_ttf_font("media/fonts/Play-regular.ttf", 48, 0);
@@ -44,53 +207,36 @@ int main()
     ALLEGRO_FONT* font_play_bold_36 = al_load_ttf_font("media/fonts/Play-bold.ttf", 36, 0);
     ALLEGRO_FONT* font_play_bold_48 = al_load_ttf_font("media/fonts/Play-bold.ttf", 48, 0);
     ALLEGRO_FONT* font_play_bold_60 = al_load_ttf_font("media/fonts/Play-bold.ttf", 60, 0);
-    ALLEGRO_FONT* font_play_bold_72 = al_load_ttf_font("media/fonts/Play-bold.ttf", 72, 0);
+    ALLEGRO_FONT* font_play_bold_72 = al_load_ttf_font("media/fonts/Play-bold.ttf", 72, 0);*/
 
-    ALLEGRO_BITMAP* matriz_background = al_load_bitmap("media/images/matriz.png");
-    
+    char selecao = menu(display);
 
-    al_register_event_source(queue, al_get_keyboard_event_source());
-    al_register_event_source(queue, al_get_display_event_source(display));
-    al_register_event_source(queue, al_get_timer_event_source(timer_fps));
-
-    bool update = true; 
-    ALLEGRO_EVENT event;
-
-    al_start_timer(timer_fps);
-
-    while (1)
+    switch (selecao)
     {
-        if(event.type == ALLEGRO_EVENT_TIMER)
-        {
-            update = true;
-        }       
-
-        else if (event.type == ALLEGRO_EVENT_KEY_DOWN)
-        {
-            if(event.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
-                    break;
-        }
-                            
-
-        al_wait_for_event(queue, &event);
-        al_clear_to_color(al_map_rgb(255, 255, 255));
-        al_draw_bitmap(matriz_background, 0, 0, 0);
-
-
-        if (update)
-        {
-            al_flip_display();
-            update = false;
-        }
-            
+        case 'j':
+            jogo(display, 0);
+            break;
+        case 'r':
+            jogo(display, 1);
+            break;
+        case 'l':
+            record();
+            break;
+        case 'h':
+            help();
+            break;
+        case 's':
+            sair();
+            break;
     }
-    
 
     
-    al_destroy_font(font_play_regular_24);
+    
+    ALLEGRO_EVENT event;
+    bool update = true; 
+
+
     al_destroy_display(display);
-    al_destroy_timer(timer_fps);
-    al_destroy_event_queue(queue);
 
     return 0;
 
