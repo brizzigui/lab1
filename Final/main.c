@@ -362,6 +362,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     for (int i = 0; i < 3; i++)
     {
         fila_dados[i].ocupada = false;
+        fila_dados[i].puxada = false;
     }
 
     gera_dados(fila_dados);
@@ -389,7 +390,6 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                         {
                             fila_dados[i].x[j] = x_mouse - fila_dados[i].click_point_diff_x[j];
                             fila_dados[i].y[j] = y_mouse - fila_dados[i].click_point_diff_y[j];
-                            printf("aqui.");
                         } 
                     }
                 }
