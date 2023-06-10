@@ -23,6 +23,14 @@
 #define OFFSET_BOTAO_PEQ_X 10
 #define OFFSET_BOTAO_PEQ_Y 10
 
+#define LADO_DADO 100
+#define OFFSET_EXTRA_DADO 25
+#define OFFSET_INTRA_DADO 15
+
+#define FILA_ANCORA_ESQUERDA_X 50
+#define FILA_OFFSET_X 310
+#define FILA_ANCORA_Y 850
+
 #define BRANCO al_map_rgb(255, 255, 255)
 #define PRETO al_map_rgb(0, 0, 0)
 #define AZUL_ESCURO al_map_rgb(0, 15, 50)
@@ -147,6 +155,172 @@ char menu(ALLEGRO_DISPLAY* display)
     }
 }
 
+struct celula
+{
+    bool ocupada;
+    int num_dado;
+    ALLEGRO_COLOR cor;
+    float x, y;
+};
+
+struct dados_gerados
+{
+    bool ocupada;
+    int qnt_dados;
+    int numeros[3];
+    int rotacao;
+
+    float x[3], y[3];
+    float x_origem[3], y_origem[3];
+
+    float click_point_diff_x[3];
+    float click_point_diff_y[3];
+    bool puxada;
+};
+
+void gera_dados(struct dados_gerados fila[])
+{
+    for (int i = 0; i < 3; i++)
+    {
+        if(fila[i].ocupada == true)
+        {
+            return;
+        }
+    }
+    
+    for (int i = 0; i < 3; i++)
+    {
+        fila[i].qnt_dados = (rand() % 3) + 1;
+        fila[i].ocupada = true;
+
+        if (fila[i].qnt_dados == 2)
+        {
+            fila[i].rotacao = rand() % 4;
+        }
+        
+        else if (fila[i].qnt_dados == 3)
+        {
+            fila[i].rotacao = rand() % 4;
+        }
+
+        else
+        {
+            fila[i].rotacao = 0;
+        }
+        
+        for (int j = 0; j < fila[i].qnt_dados; j++)
+        {
+            fila[i].numeros[j] = (rand() % 7);
+        }
+    }  
+}
+
+void posiciona_dados(struct dados_gerados fila_dados[])
+{
+    
+    for (int i = 0; i < 3; i++)
+    {
+        switch (fila_dados[i].qnt_dados)
+        {
+            case 1:
+                fila_dados[i].x[0] = FILA_ANCORA_ESQUERDA_X + FILA_OFFSET_X*i;
+                fila_dados[i].y[0] = FILA_ANCORA_Y;
+                break;
+            
+            case 2:
+                switch (fila_dados[i].rotacao)
+                {
+                    case 0:
+                        fila_dados[i].x[0] = FILA_ANCORA_ESQUERDA_X + FILA_OFFSET_X*i;
+                        fila_dados[i].y[0] = FILA_ANCORA_Y;
+
+                        fila_dados[i].x[1] = FILA_ANCORA_ESQUERDA_X + FILA_OFFSET_X*i + LADO_DADO + OFFSET_INTRA_DADO;
+                        fila_dados[i].y[1] = FILA_ANCORA_Y;
+
+                        break;
+
+                    case 1:
+                        fila_dados[i].x[0] = FILA_ANCORA_ESQUERDA_X + FILA_OFFSET_X*i;
+                        fila_dados[i].y[0] = FILA_ANCORA_Y;
+
+                        fila_dados[i].x[1] = FILA_ANCORA_ESQUERDA_X + FILA_OFFSET_X*i;
+                        fila_dados[i].y[1] = FILA_ANCORA_Y + LADO_DADO + OFFSET_INTRA_DADO;
+                        
+                        break;
+
+                    case 2: 
+                        fila_dados[i].x[1] = FILA_ANCORA_ESQUERDA_X + FILA_OFFSET_X*i;
+                        fila_dados[i].y[1] = FILA_ANCORA_Y;
+
+                        fila_dados[i].x[0] = FILA_ANCORA_ESQUERDA_X + FILA_OFFSET_X*i + LADO_DADO + OFFSET_INTRA_DADO;
+                        fila_dados[i].y[0] = FILA_ANCORA_Y;
+
+                        break;
+
+                    case 3:
+                        fila_dados[i].x[1] = FILA_ANCORA_ESQUERDA_X + FILA_OFFSET_X*i;
+                        fila_dados[i].y[1] = FILA_ANCORA_Y;
+
+                        fila_dados[i].x[0] = FILA_ANCORA_ESQUERDA_X + FILA_OFFSET_X*i;
+                        fila_dados[i].y[0] = FILA_ANCORA_Y + LADO_DADO + OFFSET_INTRA_DADO;
+                        
+                        break;
+                }
+                break;
+
+            case 3:
+
+                switch (fila_dados[i].rotacao)
+                {
+                    case 0:
+                        fila_dados[i].x[0] = FILA_ANCORA_ESQUERDA_X + FILA_OFFSET_X*i;
+                        fila_dados[i].x[1] = FILA_ANCORA_ESQUERDA_X + FILA_OFFSET_X*i;
+                        fila_dados[i].x[2] = FILA_ANCORA_ESQUERDA_X + FILA_OFFSET_X*i + LADO_DADO + OFFSET_INTRA_DADO;
+
+                        fila_dados[i].y[0] = FILA_ANCORA_Y;
+                        fila_dados[i].y[1] = FILA_ANCORA_Y + LADO_DADO + OFFSET_INTRA_DADO;
+                        fila_dados[i].y[2] = FILA_ANCORA_Y + LADO_DADO + OFFSET_INTRA_DADO;
+                        break;
+                    
+                    case 1:
+                        fila_dados[i].x[0] = FILA_ANCORA_ESQUERDA_X + FILA_OFFSET_X*i + LADO_DADO + OFFSET_INTRA_DADO;
+                        fila_dados[i].x[1] = FILA_ANCORA_ESQUERDA_X + FILA_OFFSET_X*i;
+                        fila_dados[i].x[2] = FILA_ANCORA_ESQUERDA_X + FILA_OFFSET_X*i;
+
+                        fila_dados[i].y[0] = FILA_ANCORA_Y;
+                        fila_dados[i].y[1] = FILA_ANCORA_Y;
+                        fila_dados[i].y[2] = FILA_ANCORA_Y + LADO_DADO + OFFSET_INTRA_DADO;
+                        break;
+
+                    case 2:
+                        fila_dados[i].x[0] = FILA_ANCORA_ESQUERDA_X + FILA_OFFSET_X*i + LADO_DADO + OFFSET_INTRA_DADO;
+                        fila_dados[i].x[1] = FILA_ANCORA_ESQUERDA_X + FILA_OFFSET_X*i + LADO_DADO + OFFSET_INTRA_DADO;
+                        fila_dados[i].x[2] = FILA_ANCORA_ESQUERDA_X + FILA_OFFSET_X*i;
+
+                        fila_dados[i].y[0] = FILA_ANCORA_Y + LADO_DADO + OFFSET_INTRA_DADO;
+                        fila_dados[i].y[1] = FILA_ANCORA_Y;
+                        fila_dados[i].y[2] = FILA_ANCORA_Y;
+                        break;
+
+                    case 3:
+                        fila_dados[i].x[0] = FILA_ANCORA_ESQUERDA_X + FILA_OFFSET_X*i;
+                        fila_dados[i].x[1] = FILA_ANCORA_ESQUERDA_X + FILA_OFFSET_X*i + LADO_DADO + OFFSET_INTRA_DADO;
+                        fila_dados[i].x[2] = FILA_ANCORA_ESQUERDA_X + FILA_OFFSET_X*i + LADO_DADO + OFFSET_INTRA_DADO;
+
+                        fila_dados[i].y[0] = FILA_ANCORA_Y + LADO_DADO + OFFSET_INTRA_DADO;
+                        fila_dados[i].y[1] = FILA_ANCORA_Y + LADO_DADO + OFFSET_INTRA_DADO;
+                        fila_dados[i].y[2] = FILA_ANCORA_Y;
+                        break;
+                }   
+
+                break;
+        }
+
+    }
+    
+    
+}
+
 void jogo(ALLEGRO_DISPLAY* display, int restaura)
 {
     ALLEGRO_FONT* font_2p_regular_72 = al_load_ttf_font("media/fonts/PressStart2P-regular.ttf", 72, 0);
@@ -162,17 +336,37 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     ALLEGRO_BITMAP* matriz_background = al_load_bitmap("media/images/matriz.png");
     ALLEGRO_BITMAP* botao_sair = al_load_bitmap("media/images/buttons/sair.png");
     ALLEGRO_BITMAP* botao_salvar_e_sair = al_load_bitmap("media/images/buttons/salvar_e_sair.png");
-    ALLEGRO_BITMAP* botao_menu = al_load_bitmap("media/images/buttons/menu.png");
+    ALLEGRO_BITMAP* botao_menu_peq = al_load_bitmap("media/images/buttons/menu_peq.png");
     ALLEGRO_BITMAP* botao_voltar = al_load_bitmap("media/images/buttons/voltar.png");
+
+    ALLEGRO_BITMAP* red_0 = al_load_bitmap("media/images/dice/red_0.png");
+    ALLEGRO_BITMAP* red_1 = al_load_bitmap("media/images/dice/red_1.png");
+    ALLEGRO_BITMAP* red_2 = al_load_bitmap("media/images/dice/red_2.png");
+    ALLEGRO_BITMAP* red_3 = al_load_bitmap("media/images/dice/red_3.png");
+    ALLEGRO_BITMAP* red_4 = al_load_bitmap("media/images/dice/red_4.png");
+    ALLEGRO_BITMAP* red_5 = al_load_bitmap("media/images/dice/red_5.png");
+    ALLEGRO_BITMAP* red_6 = al_load_bitmap("media/images/dice/red_6.png");
 
     ALLEGRO_MOUSE_STATE state;
 
     float x_mouse = 0, y_mouse = 0;
-    int click = 0;
+    int click = 0, release = 0, held = 0;
     bool submenu_aberto = 0;
 
     bool update = true;
     al_start_timer(timer_fps);
+
+    struct celula matriz[5][5];
+    struct dados_gerados fila_dados[3];
+    
+    for (int i = 0; i < 3; i++)
+    {
+        fila_dados[i].ocupada = false;
+    }
+
+    gera_dados(fila_dados);
+    posiciona_dados(fila_dados);
+
 
     while (1)
     {
@@ -185,21 +379,106 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
             case ALLEGRO_EVENT_TIMER: 
                 update = true;
                 x_mouse = state.x;
-                y_mouse = state.y;
+                y_mouse = state.y;               
+                
+                for (int i = 0; i < 3; i++)
+                {
+                    if (fila_dados[i].puxada)
+                    {
+                        for (int j = 0; j < fila_dados[i].qnt_dados; j++)
+                        {
+                            fila_dados[i].x[j] = x_mouse - fila_dados[i].click_point_diff_x[j];
+                            fila_dados[i].y[j] = y_mouse - fila_dados[i].click_point_diff_y[j];
+                            printf("aqui.");
+                        } 
+                    }
+                }
+                
+                
+                
                 break;
             
             case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
                 x_mouse = state.x;
                 y_mouse = state.y;
                 click = 1;
+
+                for (int i = 0; i < 3; i++)
+                {
+                    if (fila_dados[i].ocupada)
+                    {
+                        for (int j = 0; j < fila_dados[i].qnt_dados; j++)
+                        {
+                            if (x_mouse >= fila_dados[i].x[j] && x_mouse <= fila_dados[i].x[j]+LADO_DADO && y_mouse >= fila_dados[i].y[j] && y_mouse <= fila_dados[i].y[j]+LADO_DADO && click)
+                            {
+                                fila_dados[i].puxada = true;
+                                for (int k = 0; k < fila_dados[i].qnt_dados; k++)
+                                {
+                                    fila_dados[i].click_point_diff_x[k] = x_mouse - fila_dados[i].x[k];
+                                    fila_dados[i].click_point_diff_y[k] = y_mouse - fila_dados[i].y[k];
+                                }
+                                
+                            }
+                        }
+                    }
+                }
+
+                break;
+
+            case ALLEGRO_EVENT_MOUSE_BUTTON_UP:
+                x_mouse = state.x;
+                y_mouse = state.y;
+                release = 1;
+                
+                for (int i = 0; i < 3; i++)
+                {
+                    fila_dados[i].puxada = 0;
+                }
+                
                 break;
         }
 
         al_clear_to_color(AZUL_ESCURO);
         al_draw_bitmap(matriz_background, 0, 0, 0);
-            
 
-        bool pause_click = botao_padrao(LARGURA_TELA-LARG_BOTAO_PADRAO-OFFSET_BOTAO_PADRAO_X, OFFSET_BOTAO_PADRAO_Y, botao_sair, x_mouse, y_mouse, click);
+        for (int i = 0; i < 3; i++)
+        {
+            if (fila_dados[i].ocupada)
+            {
+            
+                for (int j = 0; j < fila_dados[i].qnt_dados; j++)
+                {
+                    switch (fila_dados[i].numeros[j])
+                    {
+                        case 0:
+                            al_draw_bitmap(red_0, fila_dados[i].x[j], fila_dados[i].y[j], 0);
+                            break;
+                        case 1:
+                            al_draw_bitmap(red_1, fila_dados[i].x[j], fila_dados[i].y[j], 0);
+                            break;
+                        case 2:
+                            al_draw_bitmap(red_2, fila_dados[i].x[j], fila_dados[i].y[j], 0);
+                            break;
+                        case 3:
+                            al_draw_bitmap(red_3, fila_dados[i].x[j], fila_dados[i].y[j], 0);
+                            break;
+                        case 4:
+                            al_draw_bitmap(red_4, fila_dados[i].x[j], fila_dados[i].y[j], 0);
+                            break;
+                        case 5:
+                            al_draw_bitmap(red_5, fila_dados[i].x[j], fila_dados[i].y[j], 0);
+                            break;
+                        case 6:
+                            al_draw_bitmap(red_6, fila_dados[i].x[j], fila_dados[i].y[j], 0);
+                            break;
+                    }
+                }
+            
+            }
+        }
+        
+
+        bool pause_click = botao_pequeno(LARGURA_TELA-LARG_BOTAO_PEQ-OFFSET_BOTAO_PEQ_X, OFFSET_BOTAO_PEQ_Y, botao_menu_peq, x_mouse, y_mouse, click);
 
         if (pause_click)
         {
@@ -238,7 +517,13 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
             update = false;
         }
 
-        click = 0;   
+        if (click || release)
+        {
+            held = !held;
+        }
+
+        click = 0;
+        release = 0;   
     }
 }
 
@@ -349,6 +634,7 @@ void sair()
 
 int main()
 {
+    srand(time(NULL));
     inicializar();
 
     al_set_new_display_flags(ALLEGRO_FULLSCREEN);
