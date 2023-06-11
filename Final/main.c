@@ -24,12 +24,14 @@
 #define OFFSET_BOTAO_PEQ_Y 10
 
 #define LADO_DADO 100
-#define OFFSET_EXTRA_DADO 25
 #define OFFSET_INTRA_DADO 15
 
 #define FILA_ANCORA_ESQUERDA_X 50
 #define FILA_OFFSET_X 310
 #define FILA_ANCORA_Y 850
+
+#define MATRIZ_ANCORA_X 150
+#define MATRIZ_ANCORA_Y 200
 
 #define BRANCO al_map_rgb(255, 255, 255)
 #define PRETO al_map_rgb(0, 0, 0)
@@ -159,7 +161,8 @@ struct celula
 {
     bool ocupada;
     int num_dado;
-    ALLEGRO_COLOR cor;
+    int cor;
+    ALLEGRO_BITMAP* bitmap;
     float x, y;
 };
 
@@ -169,9 +172,11 @@ struct dados_gerados
     int qnt_dados;
     int numeros[3];
     int rotacao;
+    int cor;
 
     float x[3], y[3];
     float x_origem[3], y_origem[3];
+    ALLEGRO_BITMAP* bitmap[3];
 
     float click_point_diff_x[3];
     float click_point_diff_y[3];
@@ -215,11 +220,39 @@ void gera_dados(struct dados_gerados fila[])
     }  
 }
 
-void posiciona_dados(struct dados_gerados fila_dados[])
+void posiciona_dados(struct dados_gerados fila_dados[], ALLEGRO_BITMAP* red[])
 {
     
     for (int i = 0; i < 3; i++)
     {
+        for (int j = 0; j < fila_dados[i].qnt_dados; j++)
+        {
+            switch (fila_dados[i].numeros[j])
+            {
+                case 0:
+                    fila_dados[i].bitmap[j] = red[0];
+                    break;
+                case 1:
+                    fila_dados[i].bitmap[j] = red[1];
+                    break;
+                case 2:
+                    fila_dados[i].bitmap[j] = red[2];
+                    break;
+                case 3:
+                    fila_dados[i].bitmap[j] = red[3];
+                    break;
+                case 4:
+                    fila_dados[i].bitmap[j] = red[4];
+                    break;
+                case 5:
+                    fila_dados[i].bitmap[j] = red[5];
+                    break;
+                case 6:
+                    fila_dados[i].bitmap[j] = red[6];
+                    break;
+            }
+        }
+
         switch (fila_dados[i].qnt_dados)
         {
             case 1:
@@ -321,6 +354,127 @@ void posiciona_dados(struct dados_gerados fila_dados[])
     
 }
 
+void cria_matriz(struct celula matriz[5][5], ALLEGRO_BITMAP* cell)
+{
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            matriz[i][j].ocupada = false;
+            matriz[i][j].bitmap = cell;
+
+            matriz[i][j].x = MATRIZ_ANCORA_X + j*(LADO_DADO+OFFSET_INTRA_DADO);
+            matriz[i][j].y = MATRIZ_ANCORA_Y + i*(LADO_DADO+OFFSET_INTRA_DADO);
+        }
+        
+    }
+    
+}
+
+void atualiza_matriz(struct celula matriz[5][5], ALLEGRO_BITMAP* cell, ALLEGRO_BITMAP* red[])
+{
+
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            if (matriz[i][j].ocupada)
+            {
+                switch (matriz[i][j].num_dado)
+                {
+                    case 0:
+                        matriz[i][j].bitmap = red[0];
+                        break;
+                    case 1:
+                        matriz[i][j].bitmap = red[1];
+                        break;
+                    case 2:
+                        matriz[i][j].bitmap = red[2];
+                        break;
+                    case 3:
+                        matriz[i][j].bitmap = red[3];
+                        break;
+                    case 4:
+                        matriz[i][j].bitmap = red[4];
+                        break;
+                    case 5:
+                        matriz[i][j].bitmap = red[5];
+                        break;
+                    case 6:
+                        matriz[i][j].bitmap = red[6];
+                        break;
+                }
+            }
+            
+        }
+        
+    }
+}
+
+float dist_pts_centrais(float x0, float y0, float x1, float y1)
+{
+    float x0_central, y0_central, x1_central, y1_central;
+    x0_central = x0 + LADO_DADO/2;
+    x1_central = x1 + LADO_DADO/2;
+    y0_central = y0 + LADO_DADO/2;
+    y1_central = y1 + LADO_DADO/2;
+    
+    float dif_x = x0_central - x1_central;
+    float dif_y = y0_central - y1_central;
+
+    
+    float distancia = sqrt((double)(dif_x*dif_x + dif_y*dif_y));
+    return distancia;
+}
+
+int intersec(struct dados_gerados fila[], struct celula matriz[5][5], ALLEGRO_BITMAP* red[])
+{
+
+    int redesenhar = 0;
+    int encaixe_possivel = 0;
+    int i_celula[3];
+    int j_celula[3];
+
+    for (int a = 0; a < 3; a++)
+    {
+        for (int b = 0; b < fila[a].qnt_dados; b++)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                for (int j = 0; j < 5; j++)
+                {
+                    if (dist_pts_centrais(fila[a].x[b], fila[a].y[b], matriz[i][j].x, matriz[i][j].y) <= LADO_DADO/2 && matriz[i][j].ocupada == false)
+                    {
+                        i_celula[encaixe_possivel] = i;
+                        j_celula[encaixe_possivel] = j;
+                        encaixe_possivel++;
+                    }
+                    
+                }
+                
+            }
+        
+        }
+
+
+        if(encaixe_possivel == fila[a].qnt_dados)
+        {
+            fila[a].ocupada = false;
+            for (int i = 0; i < fila[a].qnt_dados; i++)
+            {
+                matriz[i_celula[i]][j_celula[i]].num_dado = fila[a].numeros[i];
+                matriz[i_celula[i]][j_celula[i]].ocupada = true;
+            }
+            
+            redesenhar = 1;
+        }
+
+        encaixe_possivel = 0;
+    }
+    
+    return redesenhar;
+}
+
 void jogo(ALLEGRO_DISPLAY* display, int restaura)
 {
     ALLEGRO_FONT* font_2p_regular_72 = al_load_ttf_font("media/fonts/PressStart2P-regular.ttf", 72, 0);
@@ -333,19 +487,23 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     al_register_event_source(queue, al_get_timer_event_source(timer_fps));
     ALLEGRO_EVENT event;
 
-    ALLEGRO_BITMAP* matriz_background = al_load_bitmap("media/images/matriz.png");
+    ALLEGRO_BITMAP* background = al_load_bitmap("media/images/background.png");
+    ALLEGRO_BITMAP* cell = al_load_bitmap("media/images/cell.png");
+    
     ALLEGRO_BITMAP* botao_sair = al_load_bitmap("media/images/buttons/sair.png");
     ALLEGRO_BITMAP* botao_salvar_e_sair = al_load_bitmap("media/images/buttons/salvar_e_sair.png");
     ALLEGRO_BITMAP* botao_menu_peq = al_load_bitmap("media/images/buttons/menu_peq.png");
     ALLEGRO_BITMAP* botao_voltar = al_load_bitmap("media/images/buttons/voltar.png");
 
-    ALLEGRO_BITMAP* red_0 = al_load_bitmap("media/images/dice/red_0.png");
-    ALLEGRO_BITMAP* red_1 = al_load_bitmap("media/images/dice/red_1.png");
-    ALLEGRO_BITMAP* red_2 = al_load_bitmap("media/images/dice/red_2.png");
-    ALLEGRO_BITMAP* red_3 = al_load_bitmap("media/images/dice/red_3.png");
-    ALLEGRO_BITMAP* red_4 = al_load_bitmap("media/images/dice/red_4.png");
-    ALLEGRO_BITMAP* red_5 = al_load_bitmap("media/images/dice/red_5.png");
-    ALLEGRO_BITMAP* red_6 = al_load_bitmap("media/images/dice/red_6.png");
+    ALLEGRO_BITMAP* red[7] = {
+                                al_load_bitmap("media/images/dice/red_0.png"), 
+                                al_load_bitmap("media/images/dice/red_1.png"),
+                                al_load_bitmap("media/images/dice/red_2.png"),
+                                al_load_bitmap("media/images/dice/red_3.png"),
+                                al_load_bitmap("media/images/dice/red_4.png"),
+                                al_load_bitmap("media/images/dice/red_5.png"),
+                                al_load_bitmap("media/images/dice/red_6.png")
+                            };
 
     ALLEGRO_MOUSE_STATE state;
 
@@ -366,7 +524,8 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     }
 
     gera_dados(fila_dados);
-    posiciona_dados(fila_dados);
+    posiciona_dados(fila_dados, red);
+    cria_matriz(matriz, cell);
 
 
     while (1)
@@ -429,17 +588,40 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                 x_mouse = state.x;
                 y_mouse = state.y;
                 release = 1;
-                
-                for (int i = 0; i < 3; i++)
+        
+                if (intersec(fila_dados, matriz, red))
                 {
-                    fila_dados[i].puxada = 0;
+                    atualiza_matriz(matriz, cell, red);
+                }
+                
+                int ocupadas;
+                for (int a = 0; a < 3; a++)
+                {
+                    ocupadas = 0;
+                    fila_dados[a].puxada = 0;
+                    ocupadas += fila_dados[a].ocupada;
+                }
+
+                if(ocupadas == 0)
+                {
+                    gera_dados(fila_dados);
+                    posiciona_dados(fila_dados, red);
                 }
                 
                 break;
         }
 
         al_clear_to_color(AZUL_ESCURO);
-        al_draw_bitmap(matriz_background, 0, 0, 0);
+        al_draw_bitmap(background, 0, 0, 0);  
+        for (int i = 0; i < 5; i++)
+        {
+            for (int j = 0; j < 5; j++)
+            {
+                al_draw_bitmap(matriz[i][j].bitmap, matriz[i][j].x, matriz[i][j].y, 0);
+            }
+            
+        }
+              
 
         for (int i = 0; i < 3; i++)
         {
@@ -448,30 +630,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
             
                 for (int j = 0; j < fila_dados[i].qnt_dados; j++)
                 {
-                    switch (fila_dados[i].numeros[j])
-                    {
-                        case 0:
-                            al_draw_bitmap(red_0, fila_dados[i].x[j], fila_dados[i].y[j], 0);
-                            break;
-                        case 1:
-                            al_draw_bitmap(red_1, fila_dados[i].x[j], fila_dados[i].y[j], 0);
-                            break;
-                        case 2:
-                            al_draw_bitmap(red_2, fila_dados[i].x[j], fila_dados[i].y[j], 0);
-                            break;
-                        case 3:
-                            al_draw_bitmap(red_3, fila_dados[i].x[j], fila_dados[i].y[j], 0);
-                            break;
-                        case 4:
-                            al_draw_bitmap(red_4, fila_dados[i].x[j], fila_dados[i].y[j], 0);
-                            break;
-                        case 5:
-                            al_draw_bitmap(red_5, fila_dados[i].x[j], fila_dados[i].y[j], 0);
-                            break;
-                        case 6:
-                            al_draw_bitmap(red_6, fila_dados[i].x[j], fila_dados[i].y[j], 0);
-                            break;
-                    }
+                    al_draw_bitmap(fila_dados[i].bitmap[j], fila_dados[i].x[j], fila_dados[i].y[j], 0);
                 }
             
             }
@@ -637,7 +796,7 @@ int main()
     srand(time(NULL));
     inicializar();
 
-    al_set_new_display_flags(ALLEGRO_FULLSCREEN);
+    //al_set_new_display_flags(ALLEGRO_FULLSCREEN);
     ALLEGRO_DISPLAY* display = al_create_display(LARGURA_TELA, ALTURA_TELA);
 
     /*ALLEGRO_FONT* font_play_regular_18 = al_load_ttf_font("media/fonts/Play-regular.ttf", 24, 0);
