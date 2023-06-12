@@ -594,10 +594,10 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                     atualiza_matriz(matriz, cell, red);
                 }
                 
-                int ocupadas;
+                int ocupadas = 0;
+                
                 for (int a = 0; a < 3; a++)
                 {
-                    ocupadas = 0;
                     fila_dados[a].puxada = 0;
                     ocupadas += fila_dados[a].ocupada;
                 }
@@ -796,7 +796,7 @@ int main()
     srand(time(NULL));
     inicializar();
 
-    //al_set_new_display_flags(ALLEGRO_FULLSCREEN);
+    al_set_new_display_flags(ALLEGRO_FULLSCREEN);
     ALLEGRO_DISPLAY* display = al_create_display(LARGURA_TELA, ALTURA_TELA);
 
     /*ALLEGRO_FONT* font_play_regular_18 = al_load_ttf_font("media/fonts/Play-regular.ttf", 24, 0);
