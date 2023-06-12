@@ -509,8 +509,8 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
 
     float x_mouse = 0, y_mouse = 0;
     int click = 0, release = 0, held = 0;
-    bool submenu_aberto = 0;
-
+    bool submenu_aberto = false;
+    bool pause_click = false;
     bool update = true;
     al_start_timer(timer_fps);
 
@@ -595,7 +595,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                 }
                 
                 int ocupadas = 0;
-                
+
                 for (int a = 0; a < 3; a++)
                 {
                     fila_dados[a].puxada = 0;
@@ -609,6 +609,13 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                 }
                 
                 break;
+
+
+            case ALLEGRO_EVENT_KEY_DOWN:
+                 if(event.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
+                 {
+                    submenu_aberto = !submenu_aberto;
+                 }
         }
 
         al_clear_to_color(AZUL_ESCURO);
@@ -637,7 +644,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
         }
         
 
-        bool pause_click = botao_pequeno(LARGURA_TELA-LARG_BOTAO_PEQ-OFFSET_BOTAO_PEQ_X, OFFSET_BOTAO_PEQ_Y, botao_menu_peq, x_mouse, y_mouse, click);
+        pause_click = botao_pequeno(LARGURA_TELA-LARG_BOTAO_PEQ-OFFSET_BOTAO_PEQ_X, OFFSET_BOTAO_PEQ_Y, botao_menu_peq, x_mouse, y_mouse, click);
 
         if (pause_click)
         {
