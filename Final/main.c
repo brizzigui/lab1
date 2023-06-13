@@ -599,7 +599,11 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                 for (int a = 0; a < 3; a++)
                 {
                     fila_dados[a].puxada = 0;
-                    ocupadas += fila_dados[a].ocupada;
+                    
+                    if (fila_dados[a].ocupada)
+                    {
+                        ocupadas++;
+                    }
                 }
 
                 if(ocupadas == 0)
@@ -806,20 +810,6 @@ int main()
     al_set_new_display_flags(ALLEGRO_FULLSCREEN);
     ALLEGRO_DISPLAY* display = al_create_display(LARGURA_TELA, ALTURA_TELA);
 
-    /*ALLEGRO_FONT* font_play_regular_18 = al_load_ttf_font("media/fonts/Play-regular.ttf", 24, 0);
-    ALLEGRO_FONT* font_play_regular_24 = al_load_ttf_font("media/fonts/Play-regular.ttf", 24, 0);
-    ALLEGRO_FONT* font_play_regular_36 = al_load_ttf_font("media/fonts/Play-regular.ttf", 36, 0);
-    ALLEGRO_FONT* font_play_regular_48 = al_load_ttf_font("media/fonts/Play-regular.ttf", 48, 0);
-    ALLEGRO_FONT* font_play_regular_60 = al_load_ttf_font("media/fonts/Play-regular.ttf", 60, 0);
-    ALLEGRO_FONT* font_play_regular_72 = al_load_ttf_font("media/fonts/Play-regular.ttf", 72, 0);
-
-    ALLEGRO_FONT* font_play_bold_18 = al_load_ttf_font("media/fonts/Play-bold.ttf", 24, 0);
-    ALLEGRO_FONT* font_play_bold_24 = al_load_ttf_font("media/fonts/Play-bold.ttf", 24, 0);
-    ALLEGRO_FONT* font_play_bold_36 = al_load_ttf_font("media/fonts/Play-bold.ttf", 36, 0);
-    ALLEGRO_FONT* font_play_bold_48 = al_load_ttf_font("media/fonts/Play-bold.ttf", 48, 0);
-    ALLEGRO_FONT* font_play_bold_60 = al_load_ttf_font("media/fonts/Play-bold.ttf", 60, 0);
-    ALLEGRO_FONT* font_play_bold_72 = al_load_ttf_font("media/fonts/Play-bold.ttf", 72, 0);*/
-
     while(1)
     {
         char selecao = menu(display);
@@ -843,10 +833,7 @@ int main()
                 break;
         }
     }
-    
 
-    
-    
     ALLEGRO_EVENT event;
     bool update = true; 
 
