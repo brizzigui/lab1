@@ -1,3 +1,5 @@
+//ALERTA: essa versão ainda demonstrou comportamento impreevisível em alguns casos e deve, pois, ser testada mais extensivamente
+
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -155,6 +157,20 @@ struct dados_gerados
     float click_point_diff_y[3];
     bool puxada;
 };
+
+struct controla_jogo
+{
+    int broken;
+    int pont;
+
+    bool tab_concl;
+    bool multilinha;
+    int combo;
+
+    int linhas_broken[5];
+    int colunas_broken[5];
+};
+
 
 void gera_dados(struct dados_gerados fila[])
 {
@@ -346,7 +362,6 @@ void cria_matriz(struct celula matriz[5][5], ALLEGRO_BITMAP* cell)
 
 void atualiza_matriz(struct celula matriz[5][5], ALLEGRO_BITMAP* cell, ALLEGRO_BITMAP* red[])
 {
-
     for (int i = 0; i < 5; i++)
     {
         for (int j = 0; j < 5; j++)
@@ -377,6 +392,11 @@ void atualiza_matriz(struct celula matriz[5][5], ALLEGRO_BITMAP* cell, ALLEGRO_B
                         matriz[i][j].bitmap = red[6];
                         break;
                 }
+            }
+
+            else
+            {
+                matriz[i][j].bitmap = cell;
             }
             
         }
@@ -497,6 +517,90 @@ void display_somatorios(int soma_linha[5], int soma_coluna[5], ALLEGRO_FONT* fon
     
 }
 
+int checa_soma(ALLEGRO_DISPLAY* display, struct celula matriz[5][5], int soma_linha[5], int soma_coluna[5], struct controla_jogo *controlador)
+{
+    controlador->multilinha = false;
+    controlador->tab_concl = false;
+    controlador->combo = 0;
+
+    int cont = 0;
+
+    do
+    {
+        controlador->broken = 0;
+
+        for (int i = 0; i < 5; i++)
+        {
+            if (soma_linha[i] == 10)
+            {
+                (controlador->broken)++;
+                for (int j = 0; j < 5; j++)
+                {
+                    if (matriz[i][j].ocupada)
+                    {
+                        (controlador->pont)++;
+                    }
+                    
+                    matriz[i][j].ocupada = false;
+                }  
+            }
+        }
+
+        for (int j = 0; j < 5; j++)
+        {
+            if (soma_coluna[j] == 10)
+            {
+                (controlador->broken)++;
+                for (int i = 0; i < 5; i++)
+                {
+                    if (matriz[i][j].ocupada)
+                    {
+                        (controlador->pont)++;
+                    }
+                    
+                    matriz[i][j].ocupada = false;
+                }  
+            }
+        }
+
+        int qnt_ocupadas = 0;
+        for (int i = 0; i < 5; i++)
+        {
+            for (int j = 0; j < 5; j++)
+            {
+                if (matriz[i][j].ocupada)
+                {
+                    qnt_ocupadas++;
+                }
+                
+            }
+            
+        }
+
+        if (qnt_ocupadas == 0)
+        {
+            controlador->tab_concl = true;
+        }
+        
+        if (controlador->broken > 0 && cont > 0)
+        {
+            controlador->combo++;
+        }
+        
+
+        if(controlador->broken > 1)
+        {
+            controlador->multilinha = true;
+        }
+
+        cont++;
+        somatorios(matriz, soma_linha, soma_coluna);
+
+    } while (controlador->broken != 0);
+    
+    
+}
+
 void jogo(ALLEGRO_DISPLAY* display, int restaura)
 {
     ALLEGRO_FONT* font_2p_regular_72 = al_load_ttf_font("media/fonts/PressStart2P-regular.ttf", 72, 0);
@@ -539,6 +643,8 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
 
     struct celula matriz[5][5];
     struct dados_gerados fila_dados[3];
+    struct controla_jogo controlador;
+    controlador.pont = 0;
     int soma_linha[5] = {}, soma_coluna[5] = {};
     
     for (int i = 0; i < 3; i++)
@@ -615,9 +721,9 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
         
                 if (intersec(fila_dados, matriz, red))
                 {
-                    atualiza_matriz(matriz, cell, red);
                     somatorios(matriz, soma_linha, soma_coluna);
-                    
+                    checa_soma(display, matriz, soma_linha, soma_coluna, &controlador);
+                    atualiza_matriz(matriz, cell, red);
                 }
                 
                 int ocupadas = 0;
@@ -658,6 +764,10 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
             }
             
         }
+
+        char pont_text[8];
+        sprintf(pont_text, "%d", controlador.pont);
+        al_draw_text(font_2p_regular_72, BRANCO, MATRIZ_ANCORA_X+2.5*LADO_DADO+2*OFFSET_INTRA_DADO, MATRIZ_ANCORA_Y-165, ALLEGRO_ALIGN_CENTRE, pont_text);
 
         display_somatorios(soma_linha, soma_coluna, font_play_bold_24);
               
@@ -863,10 +973,6 @@ int main()
                 break;
         }
     }
-
-    ALLEGRO_EVENT event;
-    bool update = true; 
-
 
     al_destroy_display(display);
 
