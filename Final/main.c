@@ -883,6 +883,7 @@ void help(ALLEGRO_DISPLAY* display)
     ALLEGRO_BITMAP* pag4 = al_load_bitmap("media/images/pag1.png");
     ALLEGRO_BITMAP* botao_voltar = al_load_bitmap("media/images/buttons/voltar.png");
     ALLEGRO_BITMAP* prox_pag = al_load_bitmap("media/images/buttons/prox_pag.png");
+    ALLEGRO_BITMAP* botao_menu = al_load_bitmap("media/images/buttons/menu_peq.png");
     
 
     ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
@@ -939,10 +940,19 @@ void help(ALLEGRO_DISPLAY* display)
         sprintf(contador, "Pág. %d/4", pagina);
         al_draw_text(font_2p_regular_24, BRANCO, LARGURA_TELA-LARG_BOTAO_PEQ-OFFSET_BOTAO_PEQ_X, ALTURA_TELA-ALT_BOTAO_PEQ-OFFSET_BOTAO_PEQ_Y*6, 0, contador);
 
+        bool menu = botao_pequeno(OFFSET_BOTAO_PEQ_X, ALTURA_TELA-ALT_BOTAO_PEQ*2-OFFSET_BOTAO_PEQ_Y*2, botao_menu, x_mouse, y_mouse, click);
         bool voltar = botao_pequeno(OFFSET_BOTAO_PEQ_X, ALTURA_TELA-ALT_BOTAO_PEQ-OFFSET_BOTAO_PEQ_Y, botao_voltar, x_mouse, y_mouse, click);
-        bool next_page = 0;
+        bool next_page = false;
+
         if (pagina < 4)
+        {
             next_page = botao_pequeno(LARGURA_TELA-OFFSET_BOTAO_PEQ_X-LARG_BOTAO_PEQ, ALTURA_TELA-ALT_BOTAO_PEQ-OFFSET_BOTAO_PEQ_Y, prox_pag, x_mouse, y_mouse, click);
+        }
+
+        if(menu)
+        {
+            return;
+        }
 
         if(voltar)
         {
