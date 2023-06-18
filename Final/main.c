@@ -1,5 +1,3 @@
-//ALERTA: essa versão ainda demonstrou comportamento impreevisível em alguns casos e deve, pois, ser testada mais extensivamente
-
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -441,6 +439,7 @@ int intersec(struct dados_gerados fila[], struct celula matriz[5][5], ALLEGRO_BI
                         i_celula[encaixe_possivel] = i;
                         j_celula[encaixe_possivel] = j;
                         encaixe_possivel++;
+                        printf("%d, %d\n", i, j);
                     }
                     
                 }
@@ -450,7 +449,7 @@ int intersec(struct dados_gerados fila[], struct celula matriz[5][5], ALLEGRO_BI
         }
 
 
-        if(encaixe_possivel == fila[a].qnt_dados)
+        if(encaixe_possivel == fila[a].qnt_dados && fila[a].ocupada == true)
         {
             fila[a].ocupada = false;
             for (int i = 0; i < fila[a].qnt_dados; i++)
