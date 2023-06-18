@@ -649,6 +649,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                 {
                     atualiza_matriz(matriz, cell, red);
                     somatorios(matriz, soma_linha, soma_coluna);
+                    
                 }
                 
                 int ocupadas = 0;
@@ -868,6 +869,8 @@ int main()
 
     al_set_new_display_flags(ALLEGRO_FULLSCREEN);
     ALLEGRO_DISPLAY* display = al_create_display(LARGURA_TELA, ALTURA_TELA);
+    ALLEGRO_BITMAP* icon = al_load_bitmap("media/images/dice/red_6.png");
+    al_set_display_icon(display, icon);
 
     while(1)
     {
