@@ -42,6 +42,12 @@
 #define AZUL_ESCURO al_map_rgb(0, 15, 50)
 #define AZUL_CLARO al_map_rgb(90, 150, 240)
 
+#define CODE_RED 0
+#define CODE_BLUE 1
+#define CODE_YELLOW 2
+#define CODE_GREEN 3
+#define CODE_PURPLE 4
+
 #include "code/buttons.h"
 
 void inicializar()
@@ -182,6 +188,7 @@ void gera_dados(struct dados_gerados fila[])
     
     for (int i = 0; i < 3; i++)
     {
+        fila[i].cor = (rand() % 6);
         fila[i].qnt_dados = (rand() % 3) + 1;
         fila[i].ocupada = true;
 
@@ -207,35 +214,29 @@ void gera_dados(struct dados_gerados fila[])
     }  
 }
 
-void posiciona_dados(struct dados_gerados fila_dados[], ALLEGRO_BITMAP* red[])
+void posiciona_dados(struct dados_gerados fila_dados[], ALLEGRO_BITMAP* red[], ALLEGRO_BITMAP* blue[], ALLEGRO_BITMAP* yellow[], ALLEGRO_BITMAP* green[], ALLEGRO_BITMAP* purple[])
 {
     
     for (int i = 0; i < 3; i++)
     {
         for (int j = 0; j < fila_dados[i].qnt_dados; j++)
         {
-            switch (fila_dados[i].numeros[j])
+            switch (fila_dados[i].cor)
             {
-                case 0:
-                    fila_dados[i].bitmap[j] = red[0];
+                case CODE_RED:
+                    fila_dados[i].bitmap[j] = red[fila_dados[i].numeros[j]];
                     break;
-                case 1:
-                    fila_dados[i].bitmap[j] = red[1];
+                case CODE_BLUE:
+                    fila_dados[i].bitmap[j] = blue[fila_dados[i].numeros[j]];
                     break;
-                case 2:
-                    fila_dados[i].bitmap[j] = red[2];
+                case CODE_YELLOW:
+                    fila_dados[i].bitmap[j] = yellow[fila_dados[i].numeros[j]];
                     break;
-                case 3:
-                    fila_dados[i].bitmap[j] = red[3];
+                case CODE_GREEN:
+                    fila_dados[i].bitmap[j] = green[fila_dados[i].numeros[j]];
                     break;
-                case 4:
-                    fila_dados[i].bitmap[j] = red[4];
-                    break;
-                case 5:
-                    fila_dados[i].bitmap[j] = red[5];
-                    break;
-                case 6:
-                    fila_dados[i].bitmap[j] = red[6];
+                case CODE_PURPLE:
+                    fila_dados[i].bitmap[j] = purple[fila_dados[i].numeros[j]];
                     break;
             }
         }
@@ -358,7 +359,7 @@ void cria_matriz(struct celula matriz[5][5], ALLEGRO_BITMAP* cell)
     
 }
 
-void atualiza_matriz(struct celula matriz[5][5], ALLEGRO_BITMAP* cell, ALLEGRO_BITMAP* red[])
+void atualiza_matriz(struct celula matriz[5][5], ALLEGRO_BITMAP* cell, ALLEGRO_BITMAP* red[], ALLEGRO_BITMAP* blue[], ALLEGRO_BITMAP* yellow[], ALLEGRO_BITMAP* green[], ALLEGRO_BITMAP* purple[])
 {
     for (int i = 0; i < 5; i++)
     {
@@ -366,28 +367,22 @@ void atualiza_matriz(struct celula matriz[5][5], ALLEGRO_BITMAP* cell, ALLEGRO_B
         {
             if (matriz[i][j].ocupada)
             {
-                switch (matriz[i][j].num_dado)
+                switch (matriz[i][j].cor)
                 {
-                    case 0:
-                        matriz[i][j].bitmap = red[0];
+                    case CODE_RED:
+                        matriz[i][j].bitmap = red[matriz[i][j].num_dado];
                         break;
-                    case 1:
-                        matriz[i][j].bitmap = red[1];
+                    case CODE_BLUE:
+                        matriz[i][j].bitmap = blue[matriz[i][j].num_dado];
                         break;
-                    case 2:
-                        matriz[i][j].bitmap = red[2];
+                    case CODE_YELLOW:
+                        matriz[i][j].bitmap = yellow[matriz[i][j].num_dado];
                         break;
-                    case 3:
-                        matriz[i][j].bitmap = red[3];
+                    case CODE_GREEN:
+                        matriz[i][j].bitmap = green[matriz[i][j].num_dado];
                         break;
-                    case 4:
-                        matriz[i][j].bitmap = red[4];
-                        break;
-                    case 5:
-                        matriz[i][j].bitmap = red[5];
-                        break;
-                    case 6:
-                        matriz[i][j].bitmap = red[6];
+                    case CODE_PURPLE:
+                        matriz[i][j].bitmap = purple[matriz[i][j].num_dado];
                         break;
                 }
             }
@@ -418,7 +413,7 @@ float dist_pts_centrais(float x0, float y0, float x1, float y1)
     return distancia;
 }
 
-int intersec(struct dados_gerados fila[], struct celula matriz[5][5], ALLEGRO_BITMAP* red[])
+int intersec(struct dados_gerados fila[], struct celula matriz[5][5])
 {
 
     int redesenhar = 0;
@@ -439,7 +434,6 @@ int intersec(struct dados_gerados fila[], struct celula matriz[5][5], ALLEGRO_BI
                         i_celula[encaixe_possivel] = i;
                         j_celula[encaixe_possivel] = j;
                         encaixe_possivel++;
-                        printf("%d, %d\n", i, j);
                     }
                     
                 }
@@ -454,6 +448,7 @@ int intersec(struct dados_gerados fila[], struct celula matriz[5][5], ALLEGRO_BI
             fila[a].ocupada = false;
             for (int i = 0; i < fila[a].qnt_dados; i++)
             {
+                matriz[i_celula[i]][j_celula[i]].cor = fila[a].cor;
                 matriz[i_celula[i]][j_celula[i]].num_dado = fila[a].numeros[i];
                 matriz[i_celula[i]][j_celula[i]].ocupada = true;
             }
@@ -631,6 +626,48 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                                 al_load_bitmap("media/images/dice/red_6.png")
                             };
 
+    ALLEGRO_BITMAP* blue[7] = {
+                                al_load_bitmap("media/images/dice/blue_0.png"), 
+                                al_load_bitmap("media/images/dice/blue_1.png"),
+                                al_load_bitmap("media/images/dice/blue_2.png"),
+                                al_load_bitmap("media/images/dice/blue_3.png"),
+                                al_load_bitmap("media/images/dice/blue_4.png"),
+                                al_load_bitmap("media/images/dice/blue_5.png"),
+                                al_load_bitmap("media/images/dice/blue_6.png")
+                            };
+
+    ALLEGRO_BITMAP* yellow[7] = {
+                                al_load_bitmap("media/images/dice/yellow_0.png"), 
+                                al_load_bitmap("media/images/dice/yellow_1.png"),
+                                al_load_bitmap("media/images/dice/yellow_2.png"),
+                                al_load_bitmap("media/images/dice/yellow_3.png"),
+                                al_load_bitmap("media/images/dice/yellow_4.png"),
+                                al_load_bitmap("media/images/dice/yellow_5.png"),
+                                al_load_bitmap("media/images/dice/yellow_6.png")
+                            };
+
+    ALLEGRO_BITMAP* green[7] = {
+                                al_load_bitmap("media/images/dice/green_0.png"), 
+                                al_load_bitmap("media/images/dice/green_1.png"),
+                                al_load_bitmap("media/images/dice/green_2.png"),
+                                al_load_bitmap("media/images/dice/green_3.png"),
+                                al_load_bitmap("media/images/dice/green_4.png"),
+                                al_load_bitmap("media/images/dice/green_5.png"),
+                                al_load_bitmap("media/images/dice/green_6.png")
+                            };
+                    
+    ALLEGRO_BITMAP* purple[7] = {
+                                al_load_bitmap("media/images/dice/purple_0.png"), 
+                                al_load_bitmap("media/images/dice/purple_1.png"),
+                                al_load_bitmap("media/images/dice/purple_2.png"),
+                                al_load_bitmap("media/images/dice/purple_3.png"),
+                                al_load_bitmap("media/images/dice/purple_4.png"),
+                                al_load_bitmap("media/images/dice/purple_5.png"),
+                                al_load_bitmap("media/images/dice/purple_6.png")
+                            };
+
+    printf("carregados");
+
     ALLEGRO_MOUSE_STATE state;
 
     float x_mouse = 0, y_mouse = 0;
@@ -653,9 +690,8 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     }
 
     gera_dados(fila_dados);
-    posiciona_dados(fila_dados, red);
+    posiciona_dados(fila_dados, red, blue, yellow, green, purple);
     cria_matriz(matriz, cell);
-
 
     while (1)
     {
@@ -718,11 +754,11 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                 y_mouse = state.y;
                 release = 1;
         
-                if (intersec(fila_dados, matriz, red))
+                if (intersec(fila_dados, matriz))
                 {
                     somatorios(matriz, soma_linha, soma_coluna);
                     checa_soma(display, matriz, soma_linha, soma_coluna, &controlador);
-                    atualiza_matriz(matriz, cell, red);
+                    atualiza_matriz(matriz, cell, red, blue, yellow, green, purple);
                 }
                 
                 int ocupadas = 0;
@@ -740,7 +776,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                 if(ocupadas == 0)
                 {
                     gera_dados(fila_dados);
-                    posiciona_dados(fila_dados, red);
+                    posiciona_dados(fila_dados, red, blue, yellow, green, purple);
                 }
                 
                 break;
