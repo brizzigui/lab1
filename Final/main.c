@@ -33,9 +33,14 @@
 #define MATRIZ_ANCORA_X 150
 #define MATRIZ_ANCORA_Y 200
 
+#define RAIO_INDICADOR_PTS 20
+#define INDICADORES_PTS_ANCORA_X MATRIZ_ANCORA_X+(LADO_DADO+OFFSET_INTRA_DADO)*5 + RAIO_INDICADOR_PTS
+#define INDICADORES_PTS_ANCORA_Y MATRIZ_ANCORA_Y+(LADO_DADO+OFFSET_INTRA_DADO)*5 + RAIO_INDICADOR_PTS
+
 #define BRANCO al_map_rgb(255, 255, 255)
 #define PRETO al_map_rgb(0, 0, 0)
 #define AZUL_ESCURO al_map_rgb(0, 15, 50)
+#define AZUL_CLARO al_map_rgb(90, 150, 240)
 
 void inicializar()
 {
@@ -475,9 +480,59 @@ int intersec(struct dados_gerados fila[], struct celula matriz[5][5], ALLEGRO_BI
     return redesenhar;
 }
 
+void somatorios(struct celula matriz[5][5], int soma_linha[5], int soma_coluna[5])
+{
+    for (int i = 0; i < 5; i++)
+    {   
+        soma_linha[i] = 0;
+        for (int j = 0; j < 5; j++)
+        {
+            if (matriz[i][j].ocupada)
+            {
+                soma_linha[i] += matriz[i][j].num_dado;
+            }
+        }
+    }
+
+    for (int j = 0; j < 5; j++)
+    {
+        soma_coluna[j] = 0;
+        for (int i = 0; i < 5; i++)
+        {
+            if (matriz[i][j].ocupada)
+            {
+                soma_coluna[j] += matriz[i][j].num_dado;
+            }
+        }
+    }
+    
+
+}
+
+void display_somatorios(int soma_linha[5], int soma_coluna[5], ALLEGRO_FONT* font_play_bold_24)
+{
+    char texto[5];
+
+    for (int i = 0; i < 5; i++)
+    {
+        sprintf(texto, "%d", soma_linha[i]);
+        al_draw_filled_circle(INDICADORES_PTS_ANCORA_X, MATRIZ_ANCORA_Y+LADO_DADO/2+(LADO_DADO+OFFSET_INTRA_DADO)*i, RAIO_INDICADOR_PTS, AZUL_CLARO);
+        al_draw_text(font_play_bold_24, BRANCO, INDICADORES_PTS_ANCORA_X, MATRIZ_ANCORA_Y+LADO_DADO/2+(LADO_DADO+OFFSET_INTRA_DADO)*i-0.75*RAIO_INDICADOR_PTS, ALLEGRO_ALIGN_CENTER, texto);
+    }
+
+    for (int j = 0; j < 5; j++)
+    {
+        sprintf(texto, "%d", soma_coluna[j]);
+        al_draw_filled_circle(MATRIZ_ANCORA_X+LADO_DADO/2+(LADO_DADO+OFFSET_INTRA_DADO)*j, MATRIZ_ANCORA_Y-OFFSET_INTRA_DADO-RAIO_INDICADOR_PTS, RAIO_INDICADOR_PTS, AZUL_CLARO);
+        al_draw_text(font_play_bold_24, BRANCO, MATRIZ_ANCORA_X+LADO_DADO/2+(LADO_DADO+OFFSET_INTRA_DADO)*j, MATRIZ_ANCORA_Y-OFFSET_INTRA_DADO-1.75*RAIO_INDICADOR_PTS, ALLEGRO_ALIGN_CENTER, texto);
+    }
+    
+}
+
 void jogo(ALLEGRO_DISPLAY* display, int restaura)
 {
     ALLEGRO_FONT* font_2p_regular_72 = al_load_ttf_font("media/fonts/PressStart2P-regular.ttf", 72, 0);
+    ALLEGRO_FONT* font_play_bold_24 = al_load_ttf_font("media/fonts/Play-bold.ttf", 24, 0);
     ALLEGRO_TIMER* timer_fps = al_create_timer(1.0 / 60.0);
 
     ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
@@ -516,6 +571,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
 
     struct celula matriz[5][5];
     struct dados_gerados fila_dados[3];
+    int soma_linha[5] = {}, soma_coluna[5] = {};
     
     for (int i = 0; i < 3; i++)
     {
@@ -592,6 +648,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                 if (intersec(fila_dados, matriz, red))
                 {
                     atualiza_matriz(matriz, cell, red);
+                    somatorios(matriz, soma_linha, soma_coluna);
                 }
                 
                 int ocupadas = 0;
@@ -632,6 +689,8 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
             }
             
         }
+
+        display_somatorios(soma_linha, soma_coluna, font_play_bold_24);
               
 
         for (int i = 0; i < 3; i++)
