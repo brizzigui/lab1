@@ -188,7 +188,7 @@ void gera_dados(struct dados_gerados fila[])
     
     for (int i = 0; i < 3; i++)
     {
-        fila[i].cor = (rand() % 6);
+        fila[i].cor = (rand() % 5);
         fila[i].qnt_dados = (rand() % 3) + 1;
         fila[i].ocupada = true;
 
@@ -607,6 +607,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     al_register_event_source(queue, al_get_display_event_source(display));
     al_register_event_source(queue, al_get_timer_event_source(timer_fps));
     ALLEGRO_EVENT event;
+    ALLEGRO_MOUSE_STATE state;
 
     ALLEGRO_BITMAP* background = al_load_bitmap("media/images/background.png");
     ALLEGRO_BITMAP* cell = al_load_bitmap("media/images/cell.png");
@@ -615,6 +616,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     ALLEGRO_BITMAP* botao_salvar_e_sair = al_load_bitmap("media/images/buttons/salvar_e_sair.png");
     ALLEGRO_BITMAP* botao_menu_peq = al_load_bitmap("media/images/buttons/menu_peq.png");
     ALLEGRO_BITMAP* botao_voltar = al_load_bitmap("media/images/buttons/voltar.png");
+
 
     ALLEGRO_BITMAP* red[7] = {
                                 al_load_bitmap("media/images/dice/red_0.png"), 
@@ -666,16 +668,11 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                                 al_load_bitmap("media/images/dice/purple_6.png")
                             };
 
-    printf("carregados");
-
-    ALLEGRO_MOUSE_STATE state;
-
     float x_mouse = 0, y_mouse = 0;
     int click = 0, release = 0, held = 0;
     bool submenu_aberto = false;
     bool pause_click = false;
     bool update = true;
-    al_start_timer(timer_fps);
 
     struct celula matriz[5][5];
     struct dados_gerados fila_dados[3];
@@ -693,6 +690,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     posiciona_dados(fila_dados, red, blue, yellow, green, purple);
     cria_matriz(matriz, cell);
 
+    al_start_timer(timer_fps);
     while (1)
     {
         
