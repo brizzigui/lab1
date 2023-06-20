@@ -79,6 +79,8 @@ char menu(ALLEGRO_DISPLAY* display)
     ALLEGRO_BITMAP* botao_help = al_load_bitmap("media/images/buttons/help.png");
     ALLEGRO_BITMAP* botao_sair = al_load_bitmap("media/images/buttons/sair.png");
 
+    bool ir_jogar, ir_restaurar, ir_record, ir_help, ir_sair;
+
     ALLEGRO_MOUSE_STATE state;
 
     float x_mouse = 0, y_mouse = 0;
@@ -108,23 +110,17 @@ char menu(ALLEGRO_DISPLAY* display)
         al_clear_to_color(AZUL_ESCURO);
         al_draw_text(font_2p_regular_72, BRANCO, LARGURA_TELA/2, ALTURA_TELA/4, ALLEGRO_ALIGN_CENTER, "DecaDado");
 
-        bool ir_jogar = botao_padrao(LARGURA_TELA/2-LARG_BOTAO_PADRAO/2, 450, botao_jogar, x_mouse, y_mouse, click);
-        bool ir_restaurar = botao_padrao(LARGURA_TELA/2-LARG_BOTAO_PADRAO-OFFSET_BOTAO_PADRAO_X, 450+ALT_BOTAO_PADRAO+OFFSET_BOTAO_PADRAO_Y, botao_restaurar, x_mouse, y_mouse, click);
-        bool ir_record = botao_padrao(LARGURA_TELA/2+OFFSET_BOTAO_PADRAO_X, 450+ALT_BOTAO_PADRAO+OFFSET_BOTAO_PADRAO_Y, botao_record, x_mouse, y_mouse, click);
-        bool ir_help = botao_padrao(LARGURA_TELA/2-LARG_BOTAO_PADRAO-OFFSET_BOTAO_PADRAO_X, 450+(OFFSET_BOTAO_PADRAO_Y+ALT_BOTAO_PADRAO)*2, botao_help, x_mouse, y_mouse, click);
-        bool ir_sair = botao_padrao(LARGURA_TELA/2+OFFSET_BOTAO_PADRAO_X, 450+(OFFSET_BOTAO_PADRAO_Y+ALT_BOTAO_PADRAO)*2, botao_sair, x_mouse, y_mouse, click);
+        ir_jogar = botao_padrao(LARGURA_TELA/2-LARG_BOTAO_PADRAO/2, 450, botao_jogar, x_mouse, y_mouse, click);
+        ir_restaurar = botao_padrao(LARGURA_TELA/2-LARG_BOTAO_PADRAO-OFFSET_BOTAO_PADRAO_X, 450+ALT_BOTAO_PADRAO+OFFSET_BOTAO_PADRAO_Y, botao_restaurar, x_mouse, y_mouse, click);
+        ir_record = botao_padrao(LARGURA_TELA/2+OFFSET_BOTAO_PADRAO_X, 450+ALT_BOTAO_PADRAO+OFFSET_BOTAO_PADRAO_Y, botao_record, x_mouse, y_mouse, click);
+        ir_help = botao_padrao(LARGURA_TELA/2-LARG_BOTAO_PADRAO-OFFSET_BOTAO_PADRAO_X, 450+(OFFSET_BOTAO_PADRAO_Y+ALT_BOTAO_PADRAO)*2, botao_help, x_mouse, y_mouse, click);
+        ir_sair = botao_padrao(LARGURA_TELA/2+OFFSET_BOTAO_PADRAO_X, 450+(OFFSET_BOTAO_PADRAO_Y+ALT_BOTAO_PADRAO)*2, botao_sair, x_mouse, y_mouse, click);
 
 
-        if(ir_jogar)
-            return 'j';
-        else if(ir_restaurar)
-            return 'r';
-        else if(ir_record)
-            return 'd';
-        else if(ir_help)
-            return 'h';
-        else if(ir_sair)
-            return 's';
+        if(ir_jogar || ir_restaurar || ir_record || ir_help || ir_sair)
+        {
+            break;
+        }
 
         if (update)
         {
@@ -134,6 +130,26 @@ char menu(ALLEGRO_DISPLAY* display)
 
         click = 0;
     }
+
+    al_destroy_bitmap(botao_jogar);
+    al_destroy_bitmap(botao_restaurar);
+    al_destroy_bitmap(botao_record);
+    al_destroy_bitmap(botao_help);
+    al_destroy_bitmap(botao_sair);
+    al_destroy_event_queue(queue);
+    al_destroy_font(font_2p_regular_72);
+    al_destroy_timer(timer_fps);
+
+    if(ir_jogar)
+        return 'j';
+    else if(ir_restaurar)
+        return 'r';
+    else if(ir_record)
+        return 'd';
+    else if(ir_help)
+        return 'h';
+    else if(ir_sair)
+        return 's';
 }
 
 struct celula
@@ -175,6 +191,70 @@ struct controla_jogo
     int colunas_broken[5];
 };
 
+void load_dice(ALLEGRO_BITMAP* red[7], ALLEGRO_BITMAP* blue[7], ALLEGRO_BITMAP* yellow[7], ALLEGRO_BITMAP* green[7], ALLEGRO_BITMAP* purple[7])
+{   
+    char file_name[64];
+
+    for (int i = 0; i < 7; i++)
+    {
+        sprintf(file_name, "media/images/dice/red_%d.png", i);
+        red[i] = al_load_bitmap(file_name);
+    }
+
+    for (int i = 0; i < 7; i++)
+    {
+        sprintf(file_name, "media/images/dice/blue_%d.png", i);
+        blue[i] = al_load_bitmap(file_name);
+    }
+
+    for (int i = 0; i < 7; i++)
+    {
+        sprintf(file_name, "media/images/dice/yellow_%d.png", i);
+        yellow[i] = al_load_bitmap(file_name);
+    }
+
+    for (int i = 0; i < 7; i++)
+    {
+        sprintf(file_name, "media/images/dice/green_%d.png", i);
+        green[i] = al_load_bitmap(file_name);
+    }
+
+    for (int i = 0; i < 7; i++)
+    {
+        sprintf(file_name, "media/images/dice/purple_%d.png", i);
+        purple[i] = al_load_bitmap(file_name);
+    }
+    
+
+}
+
+void destroy_dice(ALLEGRO_BITMAP* red[], ALLEGRO_BITMAP* blue[], ALLEGRO_BITMAP* yellow[], ALLEGRO_BITMAP* green[], ALLEGRO_BITMAP* purple[])
+{
+    for (int i = 0; i < 7; i++)
+    {
+        al_destroy_bitmap(red[i]);
+    }
+
+    for (int i = 0; i < 7; i++)
+    {
+        al_destroy_bitmap(blue[i]);
+    }
+    
+    for (int i = 0; i < 7; i++)
+    {
+        al_destroy_bitmap(yellow[i]);
+    }
+
+    for (int i = 0; i < 7; i++)
+    {
+        al_destroy_bitmap(green[i]);
+    }
+
+    for (int i = 0; i < 7; i++)
+    {
+        al_destroy_bitmap(purple[i]);
+    }
+}
 
 void gera_dados(struct dados_gerados fila[])
 {
@@ -574,17 +654,20 @@ int checa_soma(ALLEGRO_DISPLAY* display, struct celula matriz[5][5], int soma_li
         if (qnt_ocupadas == 0)
         {
             controlador->tab_concl = true;
+            controlador->pont += 10;
         }
         
         if (controlador->broken > 0 && cont > 0)
         {
             controlador->combo++;
+            controlador->pont += 5;
         }
         
 
         if(controlador->broken > 1)
         {
             controlador->multilinha = true;
+            controlador->pont += 7;
         }
 
         cont++;
@@ -616,63 +699,17 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     ALLEGRO_BITMAP* botao_salvar_e_sair = al_load_bitmap("media/images/buttons/salvar_e_sair.png");
     ALLEGRO_BITMAP* botao_menu_peq = al_load_bitmap("media/images/buttons/menu_peq.png");
     ALLEGRO_BITMAP* botao_voltar = al_load_bitmap("media/images/buttons/voltar.png");
-
-
-    ALLEGRO_BITMAP* red[7] = {
-                                al_load_bitmap("media/images/dice/red_0.png"), 
-                                al_load_bitmap("media/images/dice/red_1.png"),
-                                al_load_bitmap("media/images/dice/red_2.png"),
-                                al_load_bitmap("media/images/dice/red_3.png"),
-                                al_load_bitmap("media/images/dice/red_4.png"),
-                                al_load_bitmap("media/images/dice/red_5.png"),
-                                al_load_bitmap("media/images/dice/red_6.png")
-                            };
-
-    ALLEGRO_BITMAP* blue[7] = {
-                                al_load_bitmap("media/images/dice/blue_0.png"), 
-                                al_load_bitmap("media/images/dice/blue_1.png"),
-                                al_load_bitmap("media/images/dice/blue_2.png"),
-                                al_load_bitmap("media/images/dice/blue_3.png"),
-                                al_load_bitmap("media/images/dice/blue_4.png"),
-                                al_load_bitmap("media/images/dice/blue_5.png"),
-                                al_load_bitmap("media/images/dice/blue_6.png")
-                            };
-
-    ALLEGRO_BITMAP* yellow[7] = {
-                                al_load_bitmap("media/images/dice/yellow_0.png"), 
-                                al_load_bitmap("media/images/dice/yellow_1.png"),
-                                al_load_bitmap("media/images/dice/yellow_2.png"),
-                                al_load_bitmap("media/images/dice/yellow_3.png"),
-                                al_load_bitmap("media/images/dice/yellow_4.png"),
-                                al_load_bitmap("media/images/dice/yellow_5.png"),
-                                al_load_bitmap("media/images/dice/yellow_6.png")
-                            };
-
-    ALLEGRO_BITMAP* green[7] = {
-                                al_load_bitmap("media/images/dice/green_0.png"), 
-                                al_load_bitmap("media/images/dice/green_1.png"),
-                                al_load_bitmap("media/images/dice/green_2.png"),
-                                al_load_bitmap("media/images/dice/green_3.png"),
-                                al_load_bitmap("media/images/dice/green_4.png"),
-                                al_load_bitmap("media/images/dice/green_5.png"),
-                                al_load_bitmap("media/images/dice/green_6.png")
-                            };
-                    
-    ALLEGRO_BITMAP* purple[7] = {
-                                al_load_bitmap("media/images/dice/purple_0.png"), 
-                                al_load_bitmap("media/images/dice/purple_1.png"),
-                                al_load_bitmap("media/images/dice/purple_2.png"),
-                                al_load_bitmap("media/images/dice/purple_3.png"),
-                                al_load_bitmap("media/images/dice/purple_4.png"),
-                                al_load_bitmap("media/images/dice/purple_5.png"),
-                                al_load_bitmap("media/images/dice/purple_6.png")
-                            };
+    
+    ALLEGRO_BITMAP *red[7], *blue[7], *yellow[7], *green[7], *purple[7];
+    load_dice(red, blue, yellow, green, purple);
 
     float x_mouse = 0, y_mouse = 0;
     int click = 0, release = 0, held = 0;
     bool submenu_aberto = false;
     bool pause_click = false;
     bool update = true;
+
+    bool sair_salvando, sair_sem_salvar;
 
     struct celula matriz[5][5];
     struct dados_gerados fila_dados[3];
@@ -830,19 +867,18 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
         {
             al_draw_filled_rectangle(0, 0, LARGURA_TELA, ALTURA_TELA, al_map_rgba(0, 0, 0, 200));
             al_draw_text(font_2p_regular_72, BRANCO, LARGURA_TELA/2, ALTURA_TELA/4, ALLEGRO_ALIGN_CENTER, "Paused");
-            bool sair_salvando = botao_padrao(LARGURA_TELA/2-LARG_BOTAO_PADRAO/2, ALTURA_TELA/3+OFFSET_BOTAO_PADRAO_Y, botao_salvar_e_sair, x_mouse, y_mouse, click);
-            bool sair_sem_salvar = botao_padrao(LARGURA_TELA/2-LARG_BOTAO_PADRAO/2, ALTURA_TELA/3+OFFSET_BOTAO_PADRAO_Y*2+ALT_BOTAO_PADRAO, botao_sair, x_mouse, y_mouse, click);
+            sair_salvando = botao_padrao(LARGURA_TELA/2-LARG_BOTAO_PADRAO/2, ALTURA_TELA/3+OFFSET_BOTAO_PADRAO_Y, botao_salvar_e_sair, x_mouse, y_mouse, click);
+            sair_sem_salvar = botao_padrao(LARGURA_TELA/2-LARG_BOTAO_PADRAO/2, ALTURA_TELA/3+OFFSET_BOTAO_PADRAO_Y*2+ALT_BOTAO_PADRAO, botao_sair, x_mouse, y_mouse, click);
             bool voltar = botao_pequeno(LARGURA_TELA/2-LARG_BOTAO_PEQ/2, ALTURA_TELA/3+OFFSET_BOTAO_PADRAO_Y*3+ALT_BOTAO_PADRAO*2, botao_voltar, x_mouse, y_mouse, click);
              
             if (sair_salvando)
             {
-                //adicionar salvamento
-                return;
+                break;
             }
 
             else if (sair_sem_salvar)
             {
-                return;
+                break;
             }
             
             else if(voltar)
@@ -866,6 +902,20 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
         click = 0;
         release = 0;   
     }
+
+    destroy_dice(red, blue, yellow, green, purple);
+    al_destroy_bitmap(background);
+    al_destroy_bitmap(cell);
+    al_destroy_bitmap(botao_menu_peq);
+    al_destroy_bitmap(botao_sair);
+    al_destroy_bitmap(botao_salvar_e_sair);
+    al_destroy_bitmap(botao_voltar);
+    al_destroy_event_queue(queue);
+    al_destroy_font(font_2p_regular_72);
+    al_destroy_font(font_play_bold_24);
+    al_destroy_timer(timer_fps);
+
+    return;
 }
 
 void record(ALLEGRO_DISPLAY* display)
@@ -951,7 +1001,7 @@ void help(ALLEGRO_DISPLAY* display)
 
         if(menu)
         {
-            return;
+            break;
         }
 
         if(voltar)
@@ -959,7 +1009,7 @@ void help(ALLEGRO_DISPLAY* display)
             pagina--;
             if (pagina == 0)
             {
-                return;
+                break;
             }
         }
         
@@ -976,6 +1026,17 @@ void help(ALLEGRO_DISPLAY* display)
         
         click = 0;
     }
+
+    al_destroy_bitmap(pag1);
+    al_destroy_bitmap(pag2);
+    al_destroy_bitmap(pag3);
+    al_destroy_bitmap(pag4);
+    al_destroy_bitmap(botao_voltar);
+    al_destroy_bitmap(botao_menu);
+    al_destroy_bitmap(prox_pag);
+    al_destroy_font(font_2p_regular_24);
+    al_destroy_timer(timer_fps);
+    al_destroy_event_queue(queue);
 }
 
 void sair()
