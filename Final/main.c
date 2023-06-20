@@ -681,6 +681,7 @@ int checa_soma(ALLEGRO_DISPLAY* display, struct celula matriz[5][5], int soma_li
 void jogo(ALLEGRO_DISPLAY* display, int restaura)
 {
     ALLEGRO_FONT* font_2p_regular_72 = al_load_ttf_font("media/fonts/PressStart2P-regular.ttf", 72, 0);
+    ALLEGRO_FONT* font_2p_regular_36 = al_load_ttf_font("media/fonts/PressStart2P-regular.ttf", 36, 0);
     ALLEGRO_FONT* font_play_bold_24 = al_load_ttf_font("media/fonts/Play-bold.ttf", 24, 0);
     ALLEGRO_TIMER* timer_fps = al_create_timer(1.0 / 60.0);
 
@@ -705,6 +706,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
 
     float x_mouse = 0, y_mouse = 0;
     int click = 0, release = 0, held = 0;
+    int ticks = 0;
     bool submenu_aberto = false;
     bool pause_click = false;
     bool update = true;
@@ -737,6 +739,12 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
         switch(event.type)
         {
             case ALLEGRO_EVENT_TIMER: 
+
+                if(!submenu_aberto)
+                {
+                    ticks++;
+                }
+
                 update = true;
                 x_mouse = state.x;
                 y_mouse = state.y;               
@@ -835,10 +843,10 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
             
         }
 
-        char pont_text[8];
-        sprintf(pont_text, "%d", controlador.pont);
-        al_draw_text(font_2p_regular_72, BRANCO, MATRIZ_ANCORA_X+2.5*LADO_DADO+2*OFFSET_INTRA_DADO, MATRIZ_ANCORA_Y-165, ALLEGRO_ALIGN_CENTRE, pont_text);
-
+        al_draw_textf(font_2p_regular_72, BRANCO, MATRIZ_ANCORA_X+2.5*LADO_DADO+2*OFFSET_INTRA_DADO, MATRIZ_ANCORA_Y-165, ALLEGRO_ALIGN_CENTRE, "%d", controlador.pont);
+        
+        al_draw_textf(font_2p_regular_36, BRANCO, LARGURA_TELA-LARG_BOTAO_PEQ, OFFSET_BOTAO_PEQ_Y*3+ALT_BOTAO_PEQ, ALLEGRO_ALIGN_LEFT, "%02d:%02d", (ticks/60/60), (ticks/60)%60);
+    
         display_somatorios(soma_linha, soma_coluna, font_play_bold_24);
               
 
