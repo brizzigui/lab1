@@ -37,9 +37,15 @@
 #define INDICADORES_PTS_ANCORA_X MATRIZ_ANCORA_X+(LADO_DADO+OFFSET_INTRA_DADO)*5 + RAIO_INDICADOR_PTS
 #define INDICADORES_PTS_ANCORA_Y MATRIZ_ANCORA_Y+(LADO_DADO+OFFSET_INTRA_DADO)*5 + RAIO_INDICADOR_PTS
 
+#define OFFSET_PROGRESS_BARS 50
+#define ALTURA_PROGRESS_BARS 70
+#define LARG_PROGRESS_BARS 400
+#define LARG_PROGRESS_BARS_INT 360
+
 #define BRANCO al_map_rgb(255, 255, 255)
 #define PRETO al_map_rgb(0, 0, 0)
 #define AZUL_ESCURO al_map_rgb(0, 15, 50)
+#define AZUL_MEDIO al_map_rgb(0, 25, 80)
 #define AZUL_CLARO al_map_rgb(90, 150, 240)
 
 #define CODE_RED 0
@@ -190,6 +196,14 @@ struct controla_jogo
     int linhas_broken[5];
     int colunas_broken[5];
 };
+
+struct totais
+{
+    int pts_rotacao;
+    int combo_multi;
+    int tabs_concl;
+};
+
 
 void load_dice(ALLEGRO_BITMAP* red[7], ALLEGRO_BITMAP* blue[7], ALLEGRO_BITMAP* yellow[7], ALLEGRO_BITMAP* green[7], ALLEGRO_BITMAP* purple[7])
 {   
@@ -591,7 +605,7 @@ void display_somatorios(int soma_linha[5], int soma_coluna[5], ALLEGRO_FONT* fon
     
 }
 
-int checa_soma(ALLEGRO_DISPLAY* display, struct celula matriz[5][5], int soma_linha[5], int soma_coluna[5], struct controla_jogo *controlador)
+int checa_soma(ALLEGRO_DISPLAY* display, struct celula matriz[5][5], int soma_linha[5], int soma_coluna[5], struct controla_jogo *controlador, struct totais *controlador_bonus)
 {
     controlador->multilinha = false;
     controlador->tab_concl = false;
@@ -613,6 +627,7 @@ int checa_soma(ALLEGRO_DISPLAY* display, struct celula matriz[5][5], int soma_li
                     if (matriz[i][j].ocupada)
                     {
                         (controlador->pont)++;
+                        (controlador_bonus->pts_rotacao)++;
                     }
                     
                     matriz[i][j].ocupada = false;
@@ -630,6 +645,7 @@ int checa_soma(ALLEGRO_DISPLAY* display, struct celula matriz[5][5], int soma_li
                     if (matriz[i][j].ocupada)
                     {
                         (controlador->pont)++;
+                        (controlador_bonus->pts_rotacao)++;
                     }
                     
                     matriz[i][j].ocupada = false;
@@ -651,16 +667,20 @@ int checa_soma(ALLEGRO_DISPLAY* display, struct celula matriz[5][5], int soma_li
             
         }
 
-        if (qnt_ocupadas == 0)
+        if (qnt_ocupadas == 0 && controlador->tab_concl == false)
         {
             controlador->tab_concl = true;
             controlador->pont += 10;
+            controlador_bonus->pts_rotacao += 10;
+            controlador_bonus->tabs_concl++;
         }
         
         if (controlador->broken > 0 && cont > 0)
         {
             controlador->combo++;
             controlador->pont += 5;
+            controlador_bonus->pts_rotacao += 5;
+            controlador_bonus->combo_multi++;
         }
         
 
@@ -668,6 +688,8 @@ int checa_soma(ALLEGRO_DISPLAY* display, struct celula matriz[5][5], int soma_li
         {
             controlador->multilinha = true;
             controlador->pont += 7;
+            controlador_bonus->pts_rotacao += 7;
+            controlador_bonus->combo_multi++;
         }
 
         cont++;
@@ -700,6 +722,13 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     ALLEGRO_BITMAP* botao_salvar_e_sair = al_load_bitmap("media/images/buttons/salvar_e_sair.png");
     ALLEGRO_BITMAP* botao_menu_peq = al_load_bitmap("media/images/buttons/menu_peq.png");
     ALLEGRO_BITMAP* botao_voltar = al_load_bitmap("media/images/buttons/voltar.png");
+
+    ALLEGRO_BITMAP* progress_bar_rot = al_load_bitmap("media/images/progress_bars/light_blue.png");
+    
+
+
+    ALLEGRO_BITMAP* rotate_icon = al_load_bitmap("media/images/icons/rotate.png");
+    ALLEGRO_BITMAP* undo_icon = al_load_bitmap("media/images/icons/undo.png");
     
     ALLEGRO_BITMAP *red[7], *blue[7], *yellow[7], *green[7], *purple[7];
     load_dice(red, blue, yellow, green, purple);
@@ -717,6 +746,14 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     struct dados_gerados fila_dados[3];
     struct controla_jogo controlador;
     controlador.pont = 0;
+    struct totais controlador_bonus;
+    controlador_bonus.pts_rotacao = 0;
+    controlador_bonus.combo_multi = 0;
+    controlador_bonus.tabs_concl = 0;
+
+    int rotacoes = 0, bombas = 0;
+    bool tem_undo = false;
+
     int soma_linha[5] = {}, soma_coluna[5] = {};
     
     for (int i = 0; i < 3; i++)
@@ -800,7 +837,15 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                 if (intersec(fila_dados, matriz))
                 {
                     somatorios(matriz, soma_linha, soma_coluna);
-                    checa_soma(display, matriz, soma_linha, soma_coluna, &controlador);
+                    checa_soma(display, matriz, soma_linha, soma_coluna, &controlador, &controlador_bonus);
+                    
+                    rotacoes = controlador_bonus.pts_rotacao/50;
+                    bombas = controlador_bonus.combo_multi/10;
+                    if(controlador_bonus.tabs_concl >= 10)
+                    {
+                        tem_undo = true;
+                    }
+
                     atualiza_matriz(matriz, cell, red, blue, yellow, green, purple);
                 }
                 
@@ -833,7 +878,13 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
         }
 
         al_clear_to_color(AZUL_ESCURO);
+        al_draw_filled_rectangle(LARGURA_TELA/2, 0, LARGURA_TELA, ALTURA_TELA, AZUL_MEDIO);
         al_draw_bitmap(background, 0, 0, 0);  
+        al_draw_textf(font_2p_regular_72, BRANCO, MATRIZ_ANCORA_X+2.5*LADO_DADO+2*OFFSET_INTRA_DADO, MATRIZ_ANCORA_Y-165, ALLEGRO_ALIGN_CENTRE, "%d", controlador.pont);
+        al_draw_textf(font_2p_regular_36, BRANCO, LARGURA_TELA-LARG_BOTAO_PEQ, OFFSET_BOTAO_PEQ_Y*3+ALT_BOTAO_PEQ, ALLEGRO_ALIGN_LEFT, "%02d:%02d", (ticks/60/60), (ticks/60)%60);
+
+        display_somatorios(soma_linha, soma_coluna, font_play_bold_24);
+              
         for (int i = 0; i < 5; i++)
         {
             for (int j = 0; j < 5; j++)
@@ -842,13 +893,6 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
             }
             
         }
-
-        al_draw_textf(font_2p_regular_72, BRANCO, MATRIZ_ANCORA_X+2.5*LADO_DADO+2*OFFSET_INTRA_DADO, MATRIZ_ANCORA_Y-165, ALLEGRO_ALIGN_CENTRE, "%d", controlador.pont);
-        
-        al_draw_textf(font_2p_regular_36, BRANCO, LARGURA_TELA-LARG_BOTAO_PEQ, OFFSET_BOTAO_PEQ_Y*3+ALT_BOTAO_PEQ, ALLEGRO_ALIGN_LEFT, "%02d:%02d", (ticks/60/60), (ticks/60)%60);
-    
-        display_somatorios(soma_linha, soma_coluna, font_play_bold_24);
-              
 
         for (int i = 0; i < 3; i++)
         {
@@ -863,6 +907,23 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
             }
         }
         
+        al_draw_text(font_2p_regular_36, BRANCO, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y, 0, "Bônus");
+
+        al_draw_filled_rectangle(LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + 20, 
+                                MATRIZ_ANCORA_Y+OFFSET_PROGRESS_BARS*2+10, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + 20 + LARG_PROGRESS_BARS_INT*((controlador_bonus.pts_rotacao%50)/50.0), 
+                                MATRIZ_ANCORA_Y+OFFSET_PROGRESS_BARS*2+ALTURA_PROGRESS_BARS-10, BRANCO);
+        al_draw_bitmap(progress_bar_rot, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y+OFFSET_PROGRESS_BARS*2, 0);
+
+        al_draw_textf(font_play_bold_24, BRANCO, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y+OFFSET_PROGRESS_BARS*1.25, 0, "Rotações: %d", rotacoes);
+        //al_draw_bitmap(rotate_icon, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS+10 + LARG_PROGRESS_BARS, MATRIZ_ANCORA_Y+OFFSET_PROGRESS_BARS*2, 0);
+
+        al_draw_bitmap(progress_bar_rot, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS+OFFSET_PROGRESS_BARS*3, 0);
+        //al_draw_bitmap(undo_icon, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS+10 + LARG_PROGRESS_BARS, MATRIZ_ANCORA_Y+OFFSET_PROGRESS_BARS*3, 0);
+
+
+        al_draw_bitmap(progress_bar_rot, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS*2+OFFSET_PROGRESS_BARS*4, 0);
+        
+
 
         pause_click = botao_pequeno(LARGURA_TELA-LARG_BOTAO_PEQ-OFFSET_BOTAO_PEQ_X, OFFSET_BOTAO_PEQ_Y, botao_menu_peq, x_mouse, y_mouse, click);
 
