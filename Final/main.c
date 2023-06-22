@@ -190,6 +190,7 @@ struct dados_gerados
 
 struct controla_jogo
 {
+    bool change;
     int broken;
     int pont;
 
@@ -609,6 +610,7 @@ void display_somatorios(int soma_linha[5], int soma_coluna[5], ALLEGRO_FONT* fon
 
 int checa_soma(ALLEGRO_DISPLAY* display, struct celula matriz[5][5], int soma_linha[5], int soma_coluna[5], struct controla_jogo *controlador, struct totais *controlador_bonus)
 {
+    controlador->change = false;
     controlador->multilinha = false;
     controlador->tab_concl = false;
     controlador->combo = 0;
@@ -669,6 +671,12 @@ int checa_soma(ALLEGRO_DISPLAY* display, struct celula matriz[5][5], int soma_li
             
         }
 
+        if (controlador->broken > 0)
+        {
+            controlador->change = true;
+        }
+        
+
         if (qnt_ocupadas == 0 && controlador->tab_concl == false)
         {
             controlador->tab_concl = true;
@@ -701,6 +709,72 @@ int checa_soma(ALLEGRO_DISPLAY* display, struct celula matriz[5][5], int soma_li
     
     
 }
+
+void salva_estado_dados(struct dados_gerados previous_fila_dados[3], struct celula previous_matriz[5][5], struct dados_gerados fila_dados[3], struct celula matriz[5][5])
+{
+    printf("aqui");
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            previous_matriz[i][j] = matriz[i][j];
+        }
+        
+    }
+    
+    for (int i = 0; i < 3; i++)
+    {
+        previous_fila_dados[i] = fila_dados[i];
+    }
+
+}
+
+void undo_estado_dados(struct dados_gerados previous_fila_dados[3], struct celula previous_matriz[5][5], struct dados_gerados fila_dados[3], struct celula matriz[5][5])
+{
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            matriz[i][j] = previous_matriz[i][j];
+        }
+        
+    }
+    
+    int qnt_ocupadas = 0;
+    for (int i = 0; i < 3; i++)
+    {
+        if (fila_dados[i].ocupada)
+        {
+            qnt_ocupadas++;
+        } 
+    }
+    
+    if (qnt_ocupadas == 3)
+    {
+        int idx_ultima_mov;
+        for (int i = 0; i < 3; i++)
+        {
+            if(previous_fila_dados[i].ocupada)
+            {
+                idx_ultima_mov = i;
+            }
+        }
+        
+        fila_dados[2] = previous_fila_dados[idx_ultima_mov];
+    }
+    
+    else
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            fila_dados[i] = previous_fila_dados[i];
+        }
+    }
+
+
+}
+
+
 
 void jogo(ALLEGRO_DISPLAY* display, int restaura)
 {
@@ -748,16 +822,23 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     bool sair_salvando, sair_sem_salvar;
 
     struct celula matriz[5][5];
+    struct celula previous_matriz[5][5];
+
     struct dados_gerados fila_dados[3];
+    struct dados_gerados previous_fila_dados[3];
+
     struct controla_jogo controlador;
+    struct controla_jogo previous_controlador;
+
     controlador.pont = 0;
     struct totais controlador_bonus;
+    struct totais previous_controlador_bonus;
     controlador_bonus.pts_rotacao = 0;
     controlador_bonus.combo_multi = 0;
     controlador_bonus.tabs_concl = 0;
 
     int rotacoes = 0, bombas = 0;
-    bool tem_undo = false;
+    bool tem_undo = true;
 
     int soma_linha[5] = {}, soma_coluna[5] = {};
     
@@ -838,7 +919,16 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                 x_mouse = state.x;
                 y_mouse = state.y;
                 release = 1;
-        
+
+                for (int a = 0; a < 3; a++)
+                {
+                    fila_dados[a].puxada = 0;
+                }
+
+                salva_estado_dados(previous_fila_dados, previous_matriz, fila_dados, matriz);
+                previous_controlador = controlador;
+                previous_controlador_bonus = controlador_bonus;
+
                 if (intersec(fila_dados, matriz))
                 {
                     somatorios(matriz, soma_linha, soma_coluna);
@@ -846,7 +936,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                     
                     rotacoes = controlador_bonus.pts_rotacao/50;
                     bombas = controlador_bonus.combo_multi/10;
-                    if(controlador_bonus.tabs_concl >= 10)
+                    if(controlador_bonus.tabs_concl >= 5)
                     {
                         tem_undo = true;
                     }
@@ -858,8 +948,6 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
 
                 for (int a = 0; a < 3; a++)
                 {
-                    fila_dados[a].puxada = 0;
-                    
                     if (fila_dados[a].ocupada)
                     {
                         ocupadas++;
@@ -959,6 +1047,68 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                 }
             }
         }
+
+        if (bombas >= 1)
+        {
+            bool usou_bomba = botao_mini(LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + LARG_PROGRESS_BARS_INT + LARG_BOTAO_MINI, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS+OFFSET_PROGRESS_BARS*3+10, botao_rotate, x_mouse, y_mouse, click);
+            if (usou_bomba)
+            {
+                salva_estado_dados(previous_fila_dados, previous_matriz, fila_dados, matriz);
+                previous_controlador = controlador;
+                previous_controlador_bonus = controlador_bonus;
+
+
+                int qnt_explodidas = rand() % 1 + 1;
+                int prim_linha = rand() % 5;
+                int prim_coluna = rand() % 5;
+                int seg_linha, seg_coluna;
+
+                for (int i = 0; i < 5; i++)
+                {
+                    matriz[prim_linha][i].ocupada = false;
+                    matriz[i][prim_coluna].ocupada = false;
+                }
+                
+
+                if (qnt_explodidas >= 2)
+                {
+                    do
+                    {
+                        seg_linha = rand() % 5;
+                        seg_coluna = rand() % 5;
+
+                    } while (prim_linha == seg_linha || prim_coluna == seg_coluna);
+                    
+                    for (int i = 0; i < 5; i++)
+                    {
+                        matriz[seg_linha][i].ocupada = false;
+                        matriz[i][seg_coluna].ocupada = false;
+                    }
+
+                }    
+
+                bombas--;
+                controlador_bonus.combo_multi -= 10;
+                atualiza_matriz(matriz, cell, red, blue, yellow, green, purple);
+            }
+        }
+        
+        
+        if (tem_undo && !controlador.change)
+        {
+            bool usou_undo = botao_mini(LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + LARG_PROGRESS_BARS_INT + LARG_BOTAO_MINI, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS*2+OFFSET_PROGRESS_BARS*4+10, botao_rotate, x_mouse, y_mouse, click);
+            if (usou_undo)
+            {
+                tem_undo = false;
+                undo_estado_dados(previous_fila_dados, previous_matriz, fila_dados, matriz);
+                controlador = previous_controlador;
+                controlador_bonus = previous_controlador_bonus;
+
+                posiciona_dados(fila_dados, red, blue, yellow, green, purple);
+                atualiza_matriz(matriz, cell, red, blue, yellow, green, purple);
+            }
+        }
+        
         
         
         
