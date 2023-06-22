@@ -497,6 +497,69 @@ void atualiza_matriz(struct celula matriz[5][5], ALLEGRO_BITMAP* cell, ALLEGRO_B
     }
 }
 
+void salva_estado_dados(struct dados_gerados previous_fila_dados[3], struct celula previous_matriz[5][5], struct dados_gerados fila_dados[3], struct celula matriz[5][5])
+{
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            previous_matriz[i][j] = matriz[i][j];
+        }
+        
+    }
+    
+    for (int i = 0; i < 3; i++)
+    {
+        previous_fila_dados[i] = fila_dados[i];
+    }
+
+}
+
+void undo_estado_dados(struct dados_gerados previous_fila_dados[3], struct celula previous_matriz[5][5], struct dados_gerados fila_dados[3], struct celula matriz[5][5])
+{
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            matriz[i][j] = previous_matriz[i][j];
+        }
+        
+    }
+    
+    int qnt_ocupadas = 0;
+    for (int i = 0; i < 3; i++)
+    {
+        if (fila_dados[i].ocupada)
+        {
+            qnt_ocupadas++;
+        } 
+    }
+    
+    if (qnt_ocupadas == 3)
+    {
+        int idx_ultima_mov;
+        for (int i = 0; i < 3; i++)
+        {
+            if(previous_fila_dados[i].ocupada)
+            {
+                idx_ultima_mov = i;
+            }
+        }
+        
+        fila_dados[2] = previous_fila_dados[idx_ultima_mov];
+    }
+    
+    else
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            fila_dados[i] = previous_fila_dados[i];
+        }
+    }
+
+
+}
+
 float dist_pts_centrais(float x0, float y0, float x1, float y1)
 {
     float x0_central, y0_central, x1_central, y1_central;
@@ -513,7 +576,7 @@ float dist_pts_centrais(float x0, float y0, float x1, float y1)
     return distancia;
 }
 
-int intersec(struct dados_gerados fila[], struct celula matriz[5][5])
+int intersec(struct dados_gerados fila[], struct celula matriz[5][5], struct dados_gerados previous_fila_dados[3], struct celula previous_matriz[5][5])
 {
 
     int redesenhar = 0;
@@ -545,6 +608,7 @@ int intersec(struct dados_gerados fila[], struct celula matriz[5][5])
 
         if(encaixe_possivel == fila[a].qnt_dados && fila[a].ocupada == true)
         {
+            salva_estado_dados(previous_fila_dados, previous_matriz, fila, matriz);
             fila[a].ocupada = false;
             for (int i = 0; i < fila[a].qnt_dados; i++)
             {
@@ -710,72 +774,6 @@ int checa_soma(ALLEGRO_DISPLAY* display, struct celula matriz[5][5], int soma_li
     
 }
 
-void salva_estado_dados(struct dados_gerados previous_fila_dados[3], struct celula previous_matriz[5][5], struct dados_gerados fila_dados[3], struct celula matriz[5][5])
-{
-    printf("aqui");
-    for (int i = 0; i < 5; i++)
-    {
-        for (int j = 0; j < 5; j++)
-        {
-            previous_matriz[i][j] = matriz[i][j];
-        }
-        
-    }
-    
-    for (int i = 0; i < 3; i++)
-    {
-        previous_fila_dados[i] = fila_dados[i];
-    }
-
-}
-
-void undo_estado_dados(struct dados_gerados previous_fila_dados[3], struct celula previous_matriz[5][5], struct dados_gerados fila_dados[3], struct celula matriz[5][5])
-{
-    for (int i = 0; i < 5; i++)
-    {
-        for (int j = 0; j < 5; j++)
-        {
-            matriz[i][j] = previous_matriz[i][j];
-        }
-        
-    }
-    
-    int qnt_ocupadas = 0;
-    for (int i = 0; i < 3; i++)
-    {
-        if (fila_dados[i].ocupada)
-        {
-            qnt_ocupadas++;
-        } 
-    }
-    
-    if (qnt_ocupadas == 3)
-    {
-        int idx_ultima_mov;
-        for (int i = 0; i < 3; i++)
-        {
-            if(previous_fila_dados[i].ocupada)
-            {
-                idx_ultima_mov = i;
-            }
-        }
-        
-        fila_dados[2] = previous_fila_dados[idx_ultima_mov];
-    }
-    
-    else
-    {
-        for (int i = 0; i < 3; i++)
-        {
-            fila_dados[i] = previous_fila_dados[i];
-        }
-    }
-
-
-}
-
-
-
 void jogo(ALLEGRO_DISPLAY* display, int restaura)
 {
     ALLEGRO_FONT* font_2p_regular_72 = al_load_ttf_font("media/fonts/PressStart2P-regular.ttf", 72, 0);
@@ -925,11 +923,10 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                     fila_dados[a].puxada = 0;
                 }
 
-                salva_estado_dados(previous_fila_dados, previous_matriz, fila_dados, matriz);
                 previous_controlador = controlador;
                 previous_controlador_bonus = controlador_bonus;
 
-                if (intersec(fila_dados, matriz))
+                if (intersec(fila_dados, matriz, previous_fila_dados, previous_matriz))
                 {
                     somatorios(matriz, soma_linha, soma_coluna);
                     checa_soma(display, matriz, soma_linha, soma_coluna, &controlador, &controlador_bonus);
