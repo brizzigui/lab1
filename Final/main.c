@@ -47,9 +47,12 @@
 
 #define BRANCO al_map_rgb(255, 255, 255)
 #define PRETO al_map_rgb(0, 0, 0)
+#define AZUL_MUITO_ESCURO al_map_rgb(0, 5, 25)
 #define AZUL_ESCURO al_map_rgb(0, 15, 50)
 #define AZUL_MEDIO al_map_rgb(0, 25, 80)
 #define AZUL_CLARO al_map_rgb(90, 150, 240)
+#define VERMELHO al_map_rgb(160, 0, 0)
+#define VERMELHO_ESCURO al_map_rgb(90, 0, 0)
 
 #define CODE_RED 0
 #define CODE_BLUE 1
@@ -956,8 +959,10 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     ALLEGRO_BITMAP* progress_bar_blue = al_load_bitmap("media/images/progress_bars/light_blue.png");
     ALLEGRO_BITMAP* progress_bar_red = al_load_bitmap("media/images/progress_bars/red.png");
     ALLEGRO_BITMAP* progress_bar_green = al_load_bitmap("media/images/progress_bars/green.png");
-    
 
+    ALLEGRO_BITMAP* back_progress_bar_blue = al_load_bitmap("media/images/progress_bars/back_light_blue.png");
+    ALLEGRO_BITMAP* back_progress_bar_red = al_load_bitmap("media/images/progress_bars/back_red.png");
+    ALLEGRO_BITMAP* back_progress_bar_green = al_load_bitmap("media/images/progress_bars/back_green.png");
 
     ALLEGRO_BITMAP* rotate_icon = al_load_bitmap("media/images/icons/rotate.png");
     ALLEGRO_BITMAP* undo_icon = al_load_bitmap("media/images/icons/undo.png");
@@ -1155,18 +1160,21 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
         
         al_draw_text(font_2p_regular_36, BRANCO, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y, 0, "Bônus");
 
+        al_draw_bitmap(back_progress_bar_blue, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y+OFFSET_PROGRESS_BARS*2, 0);
         al_draw_filled_rectangle(LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + 20, 
                                 MATRIZ_ANCORA_Y+OFFSET_PROGRESS_BARS*2+10, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + 20 + LARG_PROGRESS_BARS_INT*((controlador_bonus.pts_rotacao%50)/50.0), 
                                 MATRIZ_ANCORA_Y+OFFSET_PROGRESS_BARS*2+ALTURA_PROGRESS_BARS-10, BRANCO);
         al_draw_bitmap(progress_bar_blue, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y+OFFSET_PROGRESS_BARS*2, 0);
         al_draw_textf(font_play_bold_24, BRANCO, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y+OFFSET_PROGRESS_BARS*1.25, 0, "Rotações: %d", rotacoes);
 
+        al_draw_bitmap(back_progress_bar_red, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS+OFFSET_PROGRESS_BARS*3, 0);
         al_draw_filled_rectangle(LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + 20, 
                                 MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS+OFFSET_PROGRESS_BARS*3+10, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + 20 + LARG_PROGRESS_BARS_INT*(controlador_bonus.combo_multi%10)/10, 
                                 MATRIZ_ANCORA_Y+OFFSET_PROGRESS_BARS*3+ALTURA_PROGRESS_BARS*2-10, BRANCO);
         al_draw_bitmap(progress_bar_red, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS+OFFSET_PROGRESS_BARS*3, 0);
         al_draw_textf(font_play_bold_24, BRANCO, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS+OFFSET_PROGRESS_BARS*2.25, 0, "Bombas: %d", bombas);
 
+        al_draw_bitmap(back_progress_bar_green, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS*2+OFFSET_PROGRESS_BARS*4, 0);
         al_draw_filled_rectangle(LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + 20, 
                                 MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS*2+OFFSET_PROGRESS_BARS*4+10, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + 20 + LARG_PROGRESS_BARS_INT*(controlador_bonus.tabs_concl%5)/5, 
                                 MATRIZ_ANCORA_Y+OFFSET_PROGRESS_BARS*4+ALTURA_PROGRESS_BARS*3-10, BRANCO);
@@ -1299,12 +1307,15 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
               
         }
 
-        if(checa_game_over(matriz, fila_dados, rotacoes, tem_undo, bombas))
+
+        game_over = checa_game_over(matriz, fila_dados, rotacoes, tem_undo, bombas);
+
+        if(game_over)
         {
-            game_over = true;
-            al_draw_filled_rectangle(0, 0, LARGURA_TELA, ALTURA_TELA, al_map_rgba(0, 0, 0, 170));
-            al_draw_text(font_2p_regular_72, BRANCO, LARGURA_TELA/2, ALTURA_TELA/4, ALLEGRO_ALIGN_CENTER, "Game Over!");
-            sair_sem_salvar = botao_padrao(LARGURA_TELA/2-LARG_BOTAO_PADRAO/2, ALTURA_TELA/3+OFFSET_BOTAO_PADRAO_Y, botao_sair, x_mouse, y_mouse, click);
+            al_draw_filled_rectangle(LARGURA_TELA/2, 0, LARGURA_TELA, ALTURA_TELA, AZUL_MUITO_ESCURO);
+            al_draw_text(font_2p_regular_72, VERMELHO_ESCURO, 3*LARGURA_TELA/4, ALTURA_TELA/4, ALLEGRO_ALIGN_CENTER, "Game Over!");
+            al_draw_text(font_2p_regular_72, VERMELHO, 3*LARGURA_TELA/4+5, ALTURA_TELA/4+5, ALLEGRO_ALIGN_CENTER, "Game Over!");
+            sair_sem_salvar = botao_padrao(3*LARGURA_TELA/4-LARG_BOTAO_PADRAO/2, ALTURA_TELA/3+OFFSET_BOTAO_PADRAO_Y, botao_sair, x_mouse, y_mouse, click);
 
             if (sair_sem_salvar)
             {
@@ -1326,7 +1337,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
 
         click = 0;
         release = 0;   
-    }
+    }    
 
     destroy_dice(red, blue, yellow, green, purple);
     al_destroy_bitmap(background);
@@ -1335,6 +1346,12 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     al_destroy_bitmap(botao_sair);
     al_destroy_bitmap(botao_salvar_e_sair);
     al_destroy_bitmap(botao_voltar);
+    al_destroy_bitmap(botao_rotate);
+
+
+    al_destroy_bitmap(progress_bar_blue);
+    al_destroy_bitmap(progress_bar_red);
+    al_destroy_bitmap(progress_bar_green);
     al_destroy_event_queue(queue);
     al_destroy_font(font_2p_regular_72);
     al_destroy_font(font_play_bold_24);
