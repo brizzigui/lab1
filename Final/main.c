@@ -29,9 +29,9 @@
 #define LADO_DADO 100
 #define OFFSET_INTRA_DADO 15
 
-#define FILA_ANCORA_ESQUERDA_X 50
+#define FILA_ANCORA_ESQUERDA_X 65
 #define FILA_OFFSET_X 310
-#define FILA_ANCORA_Y 850
+#define FILA_ANCORA_Y 835
 
 #define MATRIZ_ANCORA_X 150
 #define MATRIZ_ANCORA_Y 200
@@ -1012,7 +1012,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
         al_draw_textf(font_play_bold_24, BRANCO, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS+OFFSET_PROGRESS_BARS*2.25, 0, "Bombas: %d", bombas);
 
         al_draw_filled_rectangle(LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + 20, 
-                                MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS*2+OFFSET_PROGRESS_BARS*4+10, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + 20 + LARG_PROGRESS_BARS_INT*(controlador_bonus.combo_multi%10)/10, 
+                                MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS*2+OFFSET_PROGRESS_BARS*4+10, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + 20 + LARG_PROGRESS_BARS_INT*(controlador_bonus.tabs_concl%5)/5, 
                                 MATRIZ_ANCORA_Y+OFFSET_PROGRESS_BARS*4+ALTURA_PROGRESS_BARS*3-10, BRANCO);
         al_draw_bitmap(progress_bar_green, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS*2+OFFSET_PROGRESS_BARS*4, 0);
         char string_undo[64];
@@ -1087,6 +1087,8 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                 bombas--;
                 controlador_bonus.combo_multi -= 10;
                 atualiza_matriz(matriz, cell, red, blue, yellow, green, purple);
+                somatorios(matriz, soma_linha, soma_coluna);
+                checa_soma(display, matriz, soma_linha, soma_coluna, &controlador, &controlador_bonus);
             }
         }
         
@@ -1097,20 +1099,18 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
             if (usou_undo)
             {
                 tem_undo = false;
+                controlador_bonus.tabs_concl = 0;
+
                 undo_estado_dados(previous_fila_dados, previous_matriz, fila_dados, matriz);
                 controlador = previous_controlador;
                 controlador_bonus = previous_controlador_bonus;
 
                 posiciona_dados(fila_dados, red, blue, yellow, green, purple);
                 atualiza_matriz(matriz, cell, red, blue, yellow, green, purple);
+                somatorios(matriz, soma_linha, soma_coluna);
             }
         }
         
-        
-        
-        
-        
-
 
         pause_click = botao_pequeno(LARGURA_TELA-LARG_BOTAO_PEQ-OFFSET_BOTAO_PEQ_X, OFFSET_BOTAO_PEQ_Y, botao_menu_peq, x_mouse, y_mouse, click);
 
