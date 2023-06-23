@@ -910,6 +910,8 @@ int tem_espaco(struct celula matriz[5][5], struct dados_gerados fila)
 int checa_game_over(struct celula matriz[5][5], struct dados_gerados fila[3], int rotacoes, int bombas, bool tem_undo)
 {
 
+    bool tem_jogada;
+
     if (tem_undo || bombas > 0)
     {
         return false;
@@ -919,11 +921,31 @@ int checa_game_over(struct celula matriz[5][5], struct dados_gerados fila[3], in
     {
         if (fila[a].ocupada)
         {
-            bool tem_jogada = tem_espaco(matriz, fila[a]);
-            if (tem_jogada)
+            if((rotacoes > 0 || fila[a].foi_rotacionada) && fila[a].qnt_dados >= 2)
             {
-                return false;
+                struct dados_gerados fila_copia = fila[a];
+                for (int i = 0; i < 4; i++)
+                {
+                    fila_copia.rotacao = i;
+                    tem_jogada = tem_espaco(matriz, fila_copia);
+                    if (tem_jogada)
+                    {
+                        return false;
+                    }
+                }
+
             }
+
+            else
+            {
+                tem_jogada = tem_espaco(matriz, fila[a]);
+                if (tem_jogada)
+                {
+                    return false;
+                }
+            }
+            
+            
         }
         
     }
@@ -989,10 +1011,10 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     struct controla_jogo controlador;
     struct controla_jogo previous_controlador;
 
-    controlador.pont = 0;
+    controlador.pont = 45;
     struct totais controlador_bonus;
     struct totais previous_controlador_bonus;
-    controlador_bonus.pts_rotacao = 0;
+    controlador_bonus.pts_rotacao = 45;
     controlador_bonus.combo_multi = 0;
     controlador_bonus.tabs_concl = 0;
 
