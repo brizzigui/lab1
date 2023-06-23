@@ -774,6 +774,161 @@ int checa_soma(ALLEGRO_DISPLAY* display, struct celula matriz[5][5], int soma_li
     
 }
 
+int tem_espaco(struct celula matriz[5][5], struct dados_gerados fila)
+{
+    switch (fila.qnt_dados)
+    {
+        case 1:
+            for (int i = 0; i < 5; i++)
+            {
+                for (int j = 0; j < 5; j++)
+                {
+                    if (!matriz[i][j].ocupada)
+                    {
+                        return true;
+                    }
+                    
+                }
+                
+            }
+            
+            break;
+        
+        case 2:
+            switch (fila.rotacao)
+            {
+                case 0: case 2:
+                    for (int i = 0; i < 5; i++)
+                    {
+                        for (int j = 0; j < 4; j++)
+                        {
+                            if (!matriz[i][j].ocupada && !matriz[i][j+1].ocupada)
+                            {
+                                return true;
+                            }
+                            
+                        }
+                        
+                    }
+                    
+                    break;
+                
+                case 1: case 3:
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        for (int j = 0; j < 5; j++)
+                        {
+                            if (!matriz[i][j].ocupada && !matriz[i+1][j].ocupada)
+                            {
+                                return true;
+                            }
+                            
+                        }
+                        
+                    }
+                    break;
+            }
+            break;
+
+        case 3:
+
+            switch (fila.rotacao)
+            {
+                case 0:
+                    for (int i = 0; i < 4; i++)
+                    {
+                        for (int j = 0; j < 4; j++)
+                        {
+                            if (!matriz[i][j].ocupada && !matriz[i+1][j].ocupada && !matriz[i+1][j+1].ocupada)
+                            {
+                                return true;
+                            }
+                            
+                        }
+                        
+                    }
+                    
+                    break;
+                
+                case 1:
+                    for (int i = 0; i < 4; i++)
+                    {
+                        for (int j = 0; j < 4; j++)
+                        {
+                            if (!matriz[i][j].ocupada && !matriz[i+1][j].ocupada && !matriz[i][j+1].ocupada)
+                            {
+                                return true;
+                            }
+                            
+                        }
+                        
+                    }
+                    break;
+
+                case 2:
+                    for (int i = 0; i < 4; i++)
+                    {
+                        for (int j = 0; j < 4; j++)
+                        {
+                            if (!matriz[i][j].ocupada && !matriz[i][j+1].ocupada && !matriz[i+1][j+1].ocupada)
+                            {
+                                return true;
+                            }
+                            
+                        }
+                        
+                    }
+                    break;
+
+                case 3:
+                    for (int i = 0; i < 4; i++)
+                    {
+                        for (int j = 0; j < 4; j++)
+                        {
+                            if (!matriz[i][j+1].ocupada && !matriz[i+1][j].ocupada && !matriz[i+1][j+1].ocupada)
+                            {
+                                return true;
+                            }
+                            
+                        }
+                        
+                    }
+
+                    break;
+            }
+            
+            break;
+    }
+
+    return false;
+}
+
+int checa_game_over(struct celula matriz[5][5], struct dados_gerados fila[3], int rotacoes, int bombas, bool tem_undo)
+{
+
+    if (tem_undo || bombas > 0)
+    {
+        return false;
+    }  
+    
+    for (int a = 0; a < 3; a++)
+    {
+        if (fila[a].ocupada)
+        {
+            bool tem_jogada = tem_espaco(matriz, fila[a]);
+            if (tem_jogada)
+            {
+                return false;
+            }
+        }
+        
+    }
+
+    return true;
+    
+}
+
 void jogo(ALLEGRO_DISPLAY* display, int restaura)
 {
     ALLEGRO_FONT* font_2p_regular_72 = al_load_ttf_font("media/fonts/PressStart2P-regular.ttf", 72, 0);
@@ -816,6 +971,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     bool submenu_aberto = false;
     bool pause_click = false;
     bool update = true;
+    bool game_over = false;
 
     bool sair_salvando, sair_sem_salvar;
 
@@ -836,7 +992,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     controlador_bonus.tabs_concl = 0;
 
     int rotacoes = 0, bombas = 0;
-    bool tem_undo = true;
+    bool tem_undo = false;
 
     int soma_linha[5] = {}, soma_coluna[5] = {};
     
@@ -861,7 +1017,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
         {
             case ALLEGRO_EVENT_TIMER: 
 
-                if(!submenu_aberto)
+                if(!submenu_aberto && !game_over)
                 {
                     ticks++;
                 }
@@ -1111,7 +1267,6 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
             }
         }
         
-
         pause_click = botao_pequeno(LARGURA_TELA-LARG_BOTAO_PEQ-OFFSET_BOTAO_PEQ_X, OFFSET_BOTAO_PEQ_Y, botao_menu_peq, x_mouse, y_mouse, click);
 
         if (pause_click)
@@ -1121,7 +1276,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
 
         if (submenu_aberto)
         {
-            al_draw_filled_rectangle(0, 0, LARGURA_TELA, ALTURA_TELA, al_map_rgba(0, 0, 0, 200));
+            al_draw_filled_rectangle(0, 0, LARGURA_TELA, ALTURA_TELA, al_map_rgba(0, 0, 0, 220));
             al_draw_text(font_2p_regular_72, BRANCO, LARGURA_TELA/2, ALTURA_TELA/4, ALLEGRO_ALIGN_CENTER, "Paused");
             sair_salvando = botao_padrao(LARGURA_TELA/2-LARG_BOTAO_PADRAO/2, ALTURA_TELA/3+OFFSET_BOTAO_PADRAO_Y, botao_salvar_e_sair, x_mouse, y_mouse, click);
             sair_sem_salvar = botao_padrao(LARGURA_TELA/2-LARG_BOTAO_PADRAO/2, ALTURA_TELA/3+OFFSET_BOTAO_PADRAO_Y*2+ALT_BOTAO_PADRAO, botao_sair, x_mouse, y_mouse, click);
@@ -1142,6 +1297,20 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                 submenu_aberto = false;
             }
               
+        }
+
+        if(checa_game_over(matriz, fila_dados, rotacoes, tem_undo, bombas))
+        {
+            game_over = true;
+            al_draw_filled_rectangle(0, 0, LARGURA_TELA, ALTURA_TELA, al_map_rgba(0, 0, 0, 170));
+            al_draw_text(font_2p_regular_72, BRANCO, LARGURA_TELA/2, ALTURA_TELA/4, ALLEGRO_ALIGN_CENTER, "Game Over!");
+            sair_sem_salvar = botao_padrao(LARGURA_TELA/2-LARG_BOTAO_PADRAO/2, ALTURA_TELA/3+OFFSET_BOTAO_PADRAO_Y, botao_sair, x_mouse, y_mouse, click);
+
+            if (sair_sem_salvar)
+            {
+                break;
+            }
+            
         }
 
         if (update)
