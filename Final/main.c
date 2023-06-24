@@ -954,10 +954,57 @@ int checa_game_over(struct celula matriz[5][5], struct dados_gerados fila[3], in
     
 }
 
+void salva_jogo(struct celula matriz[5][5], struct celula previous_matriz[5][5], 
+                struct dados_gerados fila_dados[3], struct dados_gerados previous_fila_dados[3],
+                struct controla_jogo controlador, struct controla_jogo previous_controlador,
+                struct totais controlador_bonus, struct totais previous_controlador_bonus,
+                int soma_linha[5], int soma_coluna[5])
+{
+
+    FILE *save_file = fopen("save_files/last.txt", "w");
+
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            fprintf(save_file, "%d %d %d %f %f\n", matriz[i][j].ocupada, matriz[i][j].num_dado, matriz[i][j].cor, matriz[i][j].x, matriz[i][j].y);
+        } 
+    }
+    
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            fprintf(save_file, "%d %d %d %f %f\n", previous_matriz[i][j].ocupada, previous_matriz[i][j].num_dado, previous_matriz[i][j].cor, previous_matriz[i][j].x, previous_matriz[i][j].y);
+        } 
+    }
+    
+    for (int a = 0; a < 3; a++)
+    {
+        
+    }
+    
+    
+    
+    
+}
+
+void restaura_jogo_salvo()
+{
+    /*rotacoes = controlador_bonus.pts_rotacao/50;
+    bombas = controlador_bonus.combo_multi/10;
+    if(controlador_bonus.tabs_concl >= 5)
+    {
+        tem_undo = true;
+    }*/
+}
+
 void jogo(ALLEGRO_DISPLAY* display, int restaura)
 {
-    ALLEGRO_FONT* font_2p_regular_72 = al_load_ttf_font("media/fonts/PressStart2P-regular.ttf", 72, 0);
+    ALLEGRO_FONT* font_2p_regular_18 = al_load_ttf_font("media/fonts/PressStart2P-regular.ttf", 18, 0);
+    ALLEGRO_FONT* font_2p_regular_22 = al_load_ttf_font("media/fonts/PressStart2P-regular.ttf", 22, 0);
     ALLEGRO_FONT* font_2p_regular_36 = al_load_ttf_font("media/fonts/PressStart2P-regular.ttf", 36, 0);
+    ALLEGRO_FONT* font_2p_regular_72 = al_load_ttf_font("media/fonts/PressStart2P-regular.ttf", 72, 0);
     ALLEGRO_FONT* font_play_bold_24 = al_load_ttf_font("media/fonts/Play-bold.ttf", 24, 0);
     ALLEGRO_TIMER* timer_fps = al_create_timer(1.0 / 60.0);
 
@@ -973,10 +1020,12 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     ALLEGRO_BITMAP* cell = al_load_bitmap("media/images/cell.png");
     
     ALLEGRO_BITMAP* botao_sair = al_load_bitmap("media/images/buttons/sair.png");
+    ALLEGRO_BITMAP* botao_sair_peq = al_load_bitmap("media/images/buttons/sair_peq.png");
     ALLEGRO_BITMAP* botao_salvar_e_sair = al_load_bitmap("media/images/buttons/salvar_e_sair.png");
     ALLEGRO_BITMAP* botao_menu_peq = al_load_bitmap("media/images/buttons/menu_peq.png");
     ALLEGRO_BITMAP* botao_voltar = al_load_bitmap("media/images/buttons/voltar.png");
     ALLEGRO_BITMAP* botao_rotate = al_load_bitmap("media/images/buttons/placeholder_mini.png");
+    ALLEGRO_BITMAP* botao_jogar = al_load_bitmap("media/images/buttons/jogar.png");
 
     ALLEGRO_BITMAP* progress_bar_blue = al_load_bitmap("media/images/progress_bars/light_blue.png");
     ALLEGRO_BITMAP* progress_bar_red = al_load_bitmap("media/images/progress_bars/red.png");
@@ -988,6 +1037,8 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
 
     ALLEGRO_BITMAP* rotate_icon = al_load_bitmap("media/images/icons/rotate.png");
     ALLEGRO_BITMAP* undo_icon = al_load_bitmap("media/images/icons/undo.png");
+
+    ALLEGRO_BITMAP* back_game_over = al_load_bitmap("media/images/back_game_over.png");
     
     ALLEGRO_BITMAP *red[7], *blue[7], *yellow[7], *green[7], *purple[7];
     load_dice(red, blue, yellow, green, purple);
@@ -1000,7 +1051,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     bool update = true;
     bool game_over = false;
 
-    bool sair_salvando, sair_sem_salvar;
+    bool sair_salvando, sair_sem_salvar, jogar_novamente = false;
 
     struct celula matriz[5][5];
     struct celula previous_matriz[5][5];
@@ -1011,17 +1062,34 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     struct controla_jogo controlador;
     struct controla_jogo previous_controlador;
 
-    controlador.pont = 45;
+    controlador.pont = 0;
     struct totais controlador_bonus;
     struct totais previous_controlador_bonus;
-    controlador_bonus.pts_rotacao = 45;
+    controlador_bonus.pts_rotacao = 0;
     controlador_bonus.combo_multi = 0;
     controlador_bonus.tabs_concl = 0;
-
     int rotacoes = 0, bombas = 0;
     bool tem_undo = false;
 
     int soma_linha[5] = {}, soma_coluna[5] = {};
+
+    int max_pont;
+    bool reset_highscore = false;
+
+    FILE *high_score;
+    high_score = fopen("save_files/high_score.txt", "r");
+    if (high_score == NULL)
+    {
+        max_pont = 0;
+    }
+
+    else
+    {
+        fscanf(high_score, "%d", &max_pont);
+    }
+
+    fclose(high_score);
+
     
     for (int i = 0; i < 3; i++)
     {
@@ -1334,12 +1402,30 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
 
         if(game_over)
         {
+            if (controlador.pont > max_pont && reset_highscore == false)
+            {
+                reset_highscore = true;
+                max_pont = controlador.pont;
+                high_score = fopen("save_files/high_score.txt", "w");
+                fprintf(high_score, "%d", max_pont);
+                fclose(high_score);
+            }
+            
             al_draw_filled_rectangle(LARGURA_TELA/2, 0, LARGURA_TELA, ALTURA_TELA, AZUL_MUITO_ESCURO);
             al_draw_text(font_2p_regular_72, VERMELHO_ESCURO, 3*LARGURA_TELA/4, ALTURA_TELA/4, ALLEGRO_ALIGN_CENTER, "Game Over!");
             al_draw_text(font_2p_regular_72, VERMELHO, 3*LARGURA_TELA/4+5, ALTURA_TELA/4+5, ALLEGRO_ALIGN_CENTER, "Game Over!");
-            sair_sem_salvar = botao_padrao(3*LARGURA_TELA/4-LARG_BOTAO_PADRAO/2, ALTURA_TELA/3+OFFSET_BOTAO_PADRAO_Y, botao_sair, x_mouse, y_mouse, click);
 
-            if (sair_sem_salvar)
+            al_draw_bitmap(back_game_over, 3*LARGURA_TELA/4-600/2, ALTURA_TELA/3+OFFSET_BOTAO_PADRAO_Y, 0);
+            al_draw_text(font_2p_regular_22, BRANCO, 3*LARGURA_TELA/4-600/2+35, ALTURA_TELA/3+OFFSET_BOTAO_PADRAO_Y+30, 0, "Sua pontuação:");
+            al_draw_textf(font_2p_regular_72, AZUL_CLARO, 3*LARGURA_TELA/4-600/2+35, ALTURA_TELA/3+OFFSET_BOTAO_PADRAO_Y+80, 0, "%d pts", controlador.pont);
+            al_draw_textf(font_2p_regular_72, BRANCO, 3*LARGURA_TELA/4-600/2+35+5, ALTURA_TELA/3+OFFSET_BOTAO_PADRAO_Y+80+5, 0, "%d pts", controlador.pont);
+            al_draw_textf(font_2p_regular_18, BRANCO, 3*LARGURA_TELA/4-600/2+35, ALTURA_TELA/3+OFFSET_BOTAO_PADRAO_Y+205, 0, "O recorde é de %d pts", max_pont);
+            
+            
+            jogar_novamente = botao_padrao(3*LARGURA_TELA/4-LARG_BOTAO_PADRAO/2, 3.5*ALTURA_TELA/5+OFFSET_BOTAO_PADRAO_Y, botao_jogar, x_mouse, y_mouse, click);
+            sair_sem_salvar = botao_pequeno(3*LARGURA_TELA/4-LARG_BOTAO_PEQ/2, 3.5*ALTURA_TELA/5+OFFSET_BOTAO_PADRAO_Y*2+ALT_BOTAO_PADRAO, botao_sair_peq, x_mouse, y_mouse, click);
+            
+            if (sair_sem_salvar || jogar_novamente)
             {
                 break;
             }
@@ -1379,6 +1465,11 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     al_destroy_font(font_play_bold_24);
     al_destroy_timer(timer_fps);
 
+    if (jogar_novamente)
+    {
+        jogo(display, 0);
+    }
+    
     return;
 }
 
