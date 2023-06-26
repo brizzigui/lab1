@@ -1093,8 +1093,14 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     ALLEGRO_BITMAP* botao_salvar_e_sair = al_load_bitmap("media/images/buttons/salvar_e_sair.png");
     ALLEGRO_BITMAP* botao_menu_peq = al_load_bitmap("media/images/buttons/menu_peq.png");
     ALLEGRO_BITMAP* botao_voltar = al_load_bitmap("media/images/buttons/voltar.png");
-    ALLEGRO_BITMAP* botao_rotate = al_load_bitmap("media/images/buttons/placeholder_mini.png");
     ALLEGRO_BITMAP* botao_jogar = al_load_bitmap("media/images/buttons/jogar.png");
+
+    ALLEGRO_BITMAP* botao_bomba_mini = al_load_bitmap("media/images/buttons/bomba.png");
+    ALLEGRO_BITMAP* botao_bomba_mini_grayscale = al_load_bitmap("media/images/buttons/bomba_grayscale.png");
+    ALLEGRO_BITMAP* botao_rotate_mini = al_load_bitmap("media/images/buttons/rotate.png");
+    ALLEGRO_BITMAP* botao_rotate_mini_grayscale = al_load_bitmap("media/images/buttons/rotate_grayscale.png");
+    ALLEGRO_BITMAP* botao_undo_mini = al_load_bitmap("media/images/buttons/undo.png");
+    ALLEGRO_BITMAP* botao_undo_mini_grayscale = al_load_bitmap("media/images/buttons/undo_grayscale.png");
 
     ALLEGRO_BITMAP* progress_bar_blue = al_load_bitmap("media/images/progress_bars/light_blue.png");
     ALLEGRO_BITMAP* progress_bar_red = al_load_bitmap("media/images/progress_bars/red.png");
@@ -1104,8 +1110,6 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     ALLEGRO_BITMAP* back_progress_bar_red = al_load_bitmap("media/images/progress_bars/back_red.png");
     ALLEGRO_BITMAP* back_progress_bar_green = al_load_bitmap("media/images/progress_bars/back_green.png");
 
-    ALLEGRO_BITMAP* rotate_icon = al_load_bitmap("media/images/icons/rotate.png");
-    ALLEGRO_BITMAP* undo_icon = al_load_bitmap("media/images/icons/undo.png");
 
     ALLEGRO_BITMAP* back_game_over = al_load_bitmap("media/images/back_game_over.png");
     
@@ -1392,6 +1396,12 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                                 MATRIZ_ANCORA_Y+OFFSET_PROGRESS_BARS*2+ALTURA_PROGRESS_BARS-10, BRANCO);
         al_draw_bitmap(progress_bar_blue, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y+OFFSET_PROGRESS_BARS*2, 0);
         al_draw_textf(font_play_bold_24, BRANCO, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y+OFFSET_PROGRESS_BARS*1.25, 0, "Rotações: %d", rotacoes);
+        al_draw_bitmap(botao_rotate_mini_grayscale, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + LARG_PROGRESS_BARS_INT + LARG_BOTAO_MINI, MATRIZ_ANCORA_Y+OFFSET_PROGRESS_BARS*2+10, 0);
+        if (rotacoes >= 1)
+        {
+            al_draw_bitmap(botao_rotate_mini, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + LARG_PROGRESS_BARS_INT + LARG_BOTAO_MINI, MATRIZ_ANCORA_Y+OFFSET_PROGRESS_BARS*2+10, 0);
+        }
+        
 
         al_draw_bitmap(back_progress_bar_red, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS+OFFSET_PROGRESS_BARS*3, 0);
         al_draw_filled_rectangle(LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + 20, 
@@ -1399,6 +1409,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                                 MATRIZ_ANCORA_Y+OFFSET_PROGRESS_BARS*3+ALTURA_PROGRESS_BARS*2-10, BRANCO);
         al_draw_bitmap(progress_bar_red, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS+OFFSET_PROGRESS_BARS*3, 0);
         al_draw_textf(font_play_bold_24, BRANCO, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS+OFFSET_PROGRESS_BARS*2.25, 0, "Bombas: %d", bombas);
+        al_draw_bitmap(botao_bomba_mini_grayscale, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + LARG_PROGRESS_BARS_INT + LARG_BOTAO_MINI, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS+OFFSET_PROGRESS_BARS*3+10, 0);
 
         al_draw_bitmap(back_progress_bar_green, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS*2+OFFSET_PROGRESS_BARS*4, 0);
         al_draw_filled_rectangle(LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + 20, 
@@ -1411,13 +1422,13 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
         else
             sprintf(string_undo, "Undo: indisponível", 0);
         al_draw_textf(font_play_bold_24, BRANCO, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS*2+OFFSET_PROGRESS_BARS*3.25, 0, string_undo);
-
+        al_draw_bitmap(botao_undo_mini_grayscale, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + LARG_PROGRESS_BARS_INT + LARG_BOTAO_MINI, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS*2+OFFSET_PROGRESS_BARS*4+10, 0);
 
         for (int i = 0; i < 3; i++)
         {
             if ((rotacoes >= 1 || fila_dados[i].foi_rotacionada) && fila_dados[i].qnt_dados >= 2 && fila_dados[i].ocupada)
             {
-                bool rotacionou = botao_mini(FILA_ANCORA_ESQUERDA_X+LADO_DADO-LARG_BOTAO_MINI/2+FILA_OFFSET_X*i, FILA_ANCORA_Y-65, botao_rotate, x_mouse, y_mouse, click);
+                bool rotacionou = botao_mini(FILA_ANCORA_ESQUERDA_X+LADO_DADO-LARG_BOTAO_MINI/2+FILA_OFFSET_X*i, FILA_ANCORA_Y-65, botao_rotate_mini, x_mouse, y_mouse, click);
                 if (rotacionou)
                 {
                     if (!fila_dados[i].foi_rotacionada)
@@ -1437,7 +1448,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
 
         if (bombas >= 1)
         {
-            bool usou_bomba = botao_mini(LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + LARG_PROGRESS_BARS_INT + LARG_BOTAO_MINI, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS+OFFSET_PROGRESS_BARS*3+10, botao_rotate, x_mouse, y_mouse, click);
+            bool usou_bomba = botao_mini(LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + LARG_PROGRESS_BARS_INT + LARG_BOTAO_MINI, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS+OFFSET_PROGRESS_BARS*3+10, botao_bomba_mini, x_mouse, y_mouse, click);
             if (usou_bomba)
             {
                 salva_estado_dados(previous_fila_dados, previous_matriz, fila_dados, matriz);
@@ -1489,7 +1500,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
         
         if (tem_undo && !controlador.change)
         {
-            bool usou_undo = botao_mini(LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + LARG_PROGRESS_BARS_INT + LARG_BOTAO_MINI, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS*2+OFFSET_PROGRESS_BARS*4+10, botao_rotate, x_mouse, y_mouse, click);
+            bool usou_undo = botao_mini(LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + LARG_PROGRESS_BARS_INT + LARG_BOTAO_MINI, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS*2+OFFSET_PROGRESS_BARS*4+10, botao_undo_mini, x_mouse, y_mouse, click);
             if (usou_undo)
             {
                 tem_undo = false;
@@ -1595,7 +1606,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     al_destroy_bitmap(botao_sair);
     al_destroy_bitmap(botao_salvar_e_sair);
     al_destroy_bitmap(botao_voltar);
-    al_destroy_bitmap(botao_rotate);
+    al_destroy_bitmap(botao_rotate_mini);
 
 
     al_destroy_bitmap(progress_bar_blue);
