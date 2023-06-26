@@ -219,9 +219,6 @@ struct controla_jogo
     bool tab_concl;
     bool multilinha;
     int combo;
-
-    int linhas_broken[5];
-    int colunas_broken[5];
 };
 
 struct totais
@@ -1015,7 +1012,7 @@ void salva_jogo(struct celula matriz[5][5], struct celula previous_matriz[5][5],
                 struct dados_gerados fila_dados[3], struct dados_gerados previous_fila_dados[3],
                 struct controla_jogo controlador, struct controla_jogo previous_controlador,
                 struct totais controlador_bonus, struct totais previous_controlador_bonus,
-                int soma_linha[5], int soma_coluna[5])
+                int ticks)
 {
 
     FILE *save_file = fopen("save_files/last.txt", "w");
@@ -1024,7 +1021,7 @@ void salva_jogo(struct celula matriz[5][5], struct celula previous_matriz[5][5],
     {
         for (int j = 0; j < 5; j++)
         {
-            fprintf(save_file, "%d %d %d %f %f\n", matriz[i][j].ocupada, matriz[i][j].num_dado, matriz[i][j].cor, matriz[i][j].x, matriz[i][j].y);
+            fprintf(save_file, "%d %d %d\n", matriz[i][j].ocupada, matriz[i][j].num_dado, matriz[i][j].cor);
         } 
     }
     
@@ -1032,28 +1029,103 @@ void salva_jogo(struct celula matriz[5][5], struct celula previous_matriz[5][5],
     {
         for (int j = 0; j < 5; j++)
         {
-            fprintf(save_file, "%d %d %d %f %f\n", previous_matriz[i][j].ocupada, previous_matriz[i][j].num_dado, previous_matriz[i][j].cor, previous_matriz[i][j].x, previous_matriz[i][j].y);
+            fprintf(save_file, "%d %d %d\n", previous_matriz[i][j].ocupada, previous_matriz[i][j].num_dado, previous_matriz[i][j].cor);
         } 
     }
     
     for (int a = 0; a < 3; a++)
     {
-        
+        fprintf(save_file, "%d", fila_dados[a].qnt_dados);
+        for (int b = 0; b < fila_dados[a].qnt_dados; b++)
+        {
+            fprintf(save_file, " %d", fila_dados[a].numeros[b]);
+        }
+        fprintf(save_file, "\n");
+    }
+
+    for (int a = 0; a < 3; a++)
+    {
+        fprintf(save_file, "%d", previous_fila_dados[a].qnt_dados);
+        for (int b = 0; b < previous_fila_dados[a].qnt_dados; b++)
+        {
+            fprintf(save_file, " %d", previous_fila_dados[a].numeros[b]);
+        }
+        fprintf(save_file, "\n");
     }
     
-    
-    
-    
+    fprintf(save_file, "%d %d\n", controlador.pont, controlador.tab_concl);
+    fprintf(save_file, "%d %d %d\n", controlador_bonus.combo_multi, controlador_bonus.pts_rotacao, controlador_bonus.tabs_concl);
+    fprintf(save_file, "%d %d\n", previous_controlador.pont, previous_controlador.tab_concl);
+    fprintf(save_file, "%d %d %d\n", previous_controlador_bonus.combo_multi, previous_controlador_bonus.pts_rotacao, previous_controlador_bonus.tabs_concl);
+    fprintf(save_file, "%d\n", ticks);
+
+    fclose(save_file);
 }
 
-void restaura_jogo_salvo()
+bool restaura_jogo_salvo(struct celula matriz[5][5], struct celula previous_matriz[5][5], 
+                    struct dados_gerados fila_dados[3], struct dados_gerados previous_fila_dados[3],
+                    struct controla_jogo *controlador, struct controla_jogo *previous_controlador,
+                    struct totais *controlador_bonus, struct totais *previous_controlador_bonus,
+                    int *rotacoes, int *bombas, bool *tem_undo, int *ticks)
 {
-    /*rotacoes = controlador_bonus.pts_rotacao/50;
-    bombas = controlador_bonus.combo_multi/10;
-    if(controlador_bonus.tabs_concl >= 5)
+
+    FILE *save_file = fopen("save_files/last.txt", "r");
+    if (save_file == NULL)
     {
-        tem_undo = true;
-    }*/
+        return false;
+    }
+    
+
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            fscanf(save_file, "%d %d %d", &matriz[i][j].ocupada, &matriz[i][j].num_dado, &matriz[i][j].cor);
+        } 
+    }
+
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            fscanf(save_file, "%d %d %d", &previous_matriz[i][j].ocupada, &previous_matriz[i][j].num_dado, &previous_matriz[i][j].cor);
+        } 
+    }
+
+    for (int a = 0; a < 3; a++)
+    {
+        fscanf(save_file, "%d", &fila_dados[a].qnt_dados);
+        for (int b = 0; b < fila_dados[a].qnt_dados; b++)
+        {
+            fscanf(save_file, " %d", &fila_dados[a].numeros[b]);
+        }
+    }
+
+    for (int a = 0; a < 3; a++)
+    {
+        fscanf(save_file, "%d", &previous_fila_dados[a].qnt_dados);
+        for (int b = 0; b < previous_fila_dados[a].qnt_dados; b++)
+        {
+            fscanf(save_file, " %d", &previous_fila_dados[a].numeros[b]);
+        }
+    }
+
+    fscanf(save_file, "%d %d", &controlador->pont, &controlador->tab_concl);
+    fscanf(save_file, "%d %d %d", &controlador_bonus->combo_multi, &controlador_bonus->pts_rotacao, &controlador_bonus->tabs_concl);
+    fscanf(save_file, "%d %d", &previous_controlador->pont, &previous_controlador->tab_concl);
+    fscanf(save_file, "%d %d %d", &previous_controlador_bonus->combo_multi, &previous_controlador_bonus->pts_rotacao, &previous_controlador_bonus->tabs_concl);
+    fscanf(save_file, "%d", ticks);
+
+    *rotacoes = controlador_bonus->pts_rotacao/50;
+    *bombas = controlador_bonus->combo_multi/10;
+    if(controlador_bonus->tabs_concl >= 5)
+    {
+        *tem_undo = true;
+    }
+
+    fclose(save_file);
+
+    return true;
 }
 
 bool fora_do_lugar(struct dados_gerados fila)
@@ -1175,8 +1247,22 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     }
 
     gera_dados(fila_dados);
-    posiciona_dados(fila_dados, red, blue, yellow, green, purple);
     cria_matriz(matriz, cell);
+
+    if (restaura)
+    {
+        bool tem_jogo_salvo = restaura_jogo_salvo(matriz, previous_matriz, fila_dados, 
+                            previous_fila_dados, &controlador, &previous_controlador,
+                            &controlador_bonus, &previous_controlador_bonus, 
+                            &rotacoes, &bombas, &tem_undo, &ticks);
+        
+        if (tem_jogo_salvo)
+        {
+            atualiza_matriz(matriz, cell, red, blue, yellow, green, purple);
+        }
+    }
+
+    posiciona_dados(fila_dados, red, blue, yellow, green, purple);
 
     al_start_timer(timer_fps);
     while (1)
@@ -1616,6 +1702,19 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     al_destroy_font(font_2p_regular_72);
     al_destroy_font(font_play_bold_24);
     al_destroy_timer(timer_fps);
+
+    if (sair_salvando)
+    {
+        salva_jogo(matriz, previous_matriz, fila_dados, 
+                    previous_fila_dados, controlador, previous_controlador, 
+                    controlador_bonus, previous_controlador_bonus, ticks);
+    }
+
+    else if(sair_sem_salvar)
+    {
+        FILE *save_file = fopen("save_files/last.txt", "w");
+        fclose(save_file);
+    }
 
     if (jogar_novamente)
     {
