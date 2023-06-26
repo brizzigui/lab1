@@ -796,7 +796,7 @@ int checa_soma(ALLEGRO_DISPLAY* display, struct celula matriz[5][5], int soma_li
         }
         
 
-        if (qnt_ocupadas == 0 && controlador->tab_concl == false)
+        if (qnt_ocupadas == 0 && controlador->change)
         {
             controlador->tab_concl = true;
             controlador->pont += 10;
@@ -1289,26 +1289,29 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                 y_mouse = state.y;
                 click = 1;
 
-                for (int i = 0; i < 3; i++)
+                if (!submenu_aberto)
                 {
-                    if (fila_dados[i].ocupada)
+                    for (int i = 0; i < 3; i++)
                     {
-                        for (int j = 0; j < fila_dados[i].qnt_dados; j++)
+                        if (fila_dados[i].ocupada)
                         {
-                            if (x_mouse >= fila_dados[i].x[j] && x_mouse <= fila_dados[i].x[j]+LADO_DADO && y_mouse >= fila_dados[i].y[j] && y_mouse <= fila_dados[i].y[j]+LADO_DADO && click)
+                            for (int j = 0; j < fila_dados[i].qnt_dados; j++)
                             {
-                                fila_dados[i].puxada = true;
-                                for (int k = 0; k < fila_dados[i].qnt_dados; k++)
+                                if (x_mouse >= fila_dados[i].x[j] && x_mouse <= fila_dados[i].x[j]+LADO_DADO && y_mouse >= fila_dados[i].y[j] && y_mouse <= fila_dados[i].y[j]+LADO_DADO && click)
                                 {
-                                    fila_dados[i].click_point_diff_x[k] = x_mouse - fila_dados[i].x[k];
-                                    fila_dados[i].click_point_diff_y[k] = y_mouse - fila_dados[i].y[k];
+                                    fila_dados[i].puxada = true;
+                                    for (int k = 0; k < fila_dados[i].qnt_dados; k++)
+                                    {
+                                        fila_dados[i].click_point_diff_x[k] = x_mouse - fila_dados[i].x[k];
+                                        fila_dados[i].click_point_diff_y[k] = y_mouse - fila_dados[i].y[k];
+                                    }
+                                    
                                 }
-                                
                             }
                         }
-                    }
+                    }  
                 }
-
+                
                 break;
 
             case ALLEGRO_EVENT_MOUSE_BUTTON_UP:
@@ -1442,7 +1445,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                 previous_controlador_bonus = controlador_bonus;
 
 
-                int qnt_explodidas = rand() % 1 + 1;
+                int qnt_explodidas = rand() % 2 + 1;
                 int prim_linha = rand() % 5;
                 int prim_coluna = rand() % 5;
                 int seg_linha, seg_coluna;
@@ -1451,6 +1454,8 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                 {
                     matriz[prim_linha][i].ocupada = false;
                     matriz[i][prim_coluna].ocupada = false;
+                    matriz[prim_linha][i].animando = true;
+                    matriz[i][prim_coluna].animando = true;
                 }
                 
 
@@ -1467,6 +1472,8 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                     {
                         matriz[seg_linha][i].ocupada = false;
                         matriz[i][seg_coluna].ocupada = false;
+                        matriz[seg_linha][i].animando = true;
+                        matriz[i][seg_coluna].animando = true;
                     }
 
                 }    
@@ -1581,6 +1588,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     }    
 
     destroy_dice(red, blue, yellow, green, purple);
+    destroy_cell_animation(cell_animation);
     al_destroy_bitmap(background);
     al_destroy_bitmap(cell);
     al_destroy_bitmap(botao_menu_peq);
