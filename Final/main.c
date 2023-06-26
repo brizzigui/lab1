@@ -181,6 +181,7 @@ int digitos(int num)
 struct celula
 {
     bool animando;
+    int cell_animation_frames;
     bool ocupada;
     int num_dado;
     int cor;
@@ -293,6 +294,25 @@ void destroy_dice(ALLEGRO_BITMAP* red[], ALLEGRO_BITMAP* blue[], ALLEGRO_BITMAP*
     for (int i = 0; i < 7; i++)
     {
         al_destroy_bitmap(purple[i]);
+    }
+}
+
+void load_cell_animation(ALLEGRO_BITMAP* cell_animation[30])
+{
+    char file_name[64];
+    for (int i = 0; i < 30; i++)
+    {
+        sprintf(file_name, "media/images/animation/%d.png", i);
+        cell_animation[i] = al_load_bitmap(file_name);
+    }
+    
+}
+
+void destroy_cell_animation(ALLEGRO_BITMAP* cell_animation[30])
+{
+    for (int i = 0; i < 30; i++)
+    {
+        al_destroy_bitmap(cell_animation[i]);
     }
 }
 
@@ -482,6 +502,7 @@ void cria_matriz(struct celula matriz[5][5], ALLEGRO_BITMAP* cell)
         {
             matriz[i][j].animando = false;
             matriz[i][j].ocupada = false;
+            matriz[i][j].cell_animation_frames = 0;
             matriz[i][j].bitmap = cell;
 
             matriz[i][j].x = MATRIZ_ANCORA_X + j*(LADO_DADO+OFFSET_INTRA_DADO);
@@ -731,6 +752,7 @@ int checa_soma(ALLEGRO_DISPLAY* display, struct celula matriz[5][5], int soma_li
                     }
                     
                     matriz[i][j].ocupada = false;
+                    matriz[i][j].animando = true;
                 }  
             }
         }
@@ -749,6 +771,7 @@ int checa_soma(ALLEGRO_DISPLAY* display, struct celula matriz[5][5], int soma_li
                     }
                     
                     matriz[i][j].ocupada = false;
+                    matriz[i][j].animando = true;
                 }  
             }
         }
@@ -1062,6 +1085,8 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
 
     ALLEGRO_BITMAP* background = al_load_bitmap("media/images/background.png");
     ALLEGRO_BITMAP* cell = al_load_bitmap("media/images/cell.png");
+    ALLEGRO_BITMAP* cell_animation[30];
+    load_cell_animation(cell_animation);
     
     ALLEGRO_BITMAP* botao_sair = al_load_bitmap("media/images/buttons/sair.png");
     ALLEGRO_BITMAP* botao_sair_peq = al_load_bitmap("media/images/buttons/sair_peq.png");
@@ -1156,6 +1181,38 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
         al_wait_for_event(queue, &event);
         al_get_mouse_state(&state);
 
+        al_clear_to_color(AZUL_ESCURO);
+        al_draw_filled_rectangle(LARGURA_TELA/2, 0, LARGURA_TELA, ALTURA_TELA, AZUL_MEDIO);
+        al_draw_bitmap(background, 0, 0, 0);  
+        al_draw_textf(font_2p_regular_72, BRANCO, MATRIZ_ANCORA_X+2.5*LADO_DADO+2*OFFSET_INTRA_DADO, MATRIZ_ANCORA_Y-165, ALLEGRO_ALIGN_CENTRE, "%d", controlador.pont);
+
+        al_draw_filled_rounded_rectangle(LARGURA_TELA/2+50, 55-30, LARGURA_TELA/2+290+50, 55+70, 10, 10, AZUL_CLARO);
+        al_draw_textf(font_2p_regular_48, BRANCO, LARGURA_TELA/2+50+25, 55, ALLEGRO_ALIGN_LEFT, "%02d:%02d", (ticks/60/60), (ticks/60)%60);
+
+        display_somatorios(soma_linha, soma_coluna, font_play_bold_24);
+              
+        for (int i = 0; i < 5; i++)
+        {
+            for (int j = 0; j < 5; j++)
+            {
+                al_draw_bitmap(matriz[i][j].bitmap, matriz[i][j].x, matriz[i][j].y, 0);
+            }
+            
+        }
+
+        for (int i = 0; i < 3; i++)
+        {
+            if (fila_dados[i].ocupada)
+            {
+            
+                for (int j = 0; j < fila_dados[i].qnt_dados; j++)
+                {
+                    al_draw_bitmap(fila_dados[i].bitmap[j], fila_dados[i].x[j], fila_dados[i].y[j], 0);
+                }
+            
+            }
+        }
+
         switch(event.type)
         {
             case ALLEGRO_EVENT_TIMER: 
@@ -1202,9 +1259,29 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                     }
                     
                 }
+
+
+                for (int i = 0; i < 5; i++)
+                {
+                    for (int j = 0; j < 5; j++)
+                    {
+                        if (matriz[i][j].animando)
+                        {
+                            matriz[i][j].cell_animation_frames++;
+                            if (matriz[i][j].cell_animation_frames >= 29)
+                            {
+                                matriz[i][j].animando = false;
+                                matriz[i][j].cell_animation_frames = 0;
+                            }
+
+                            al_draw_bitmap(cell_animation[matriz[i][j].cell_animation_frames], matriz[i][j].x, matriz[i][j].y, 0);
+                            
+                        }
+                        
+                    }  
+                }
                 
-                
-                
+
                 break;
             
             case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
@@ -1302,38 +1379,6 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                  {
                     submenu_aberto = !submenu_aberto;
                  }
-        }
-
-        al_clear_to_color(AZUL_ESCURO);
-        al_draw_filled_rectangle(LARGURA_TELA/2, 0, LARGURA_TELA, ALTURA_TELA, AZUL_MEDIO);
-        al_draw_bitmap(background, 0, 0, 0);  
-        al_draw_textf(font_2p_regular_72, BRANCO, MATRIZ_ANCORA_X+2.5*LADO_DADO+2*OFFSET_INTRA_DADO, MATRIZ_ANCORA_Y-165, ALLEGRO_ALIGN_CENTRE, "%d", controlador.pont);
-
-        al_draw_filled_rounded_rectangle(LARGURA_TELA/2+50, 55-30, LARGURA_TELA/2+290+50, 55+70, 10, 10, AZUL_CLARO);
-        al_draw_textf(font_2p_regular_48, BRANCO, LARGURA_TELA/2+50+25, 55, ALLEGRO_ALIGN_LEFT, "%02d:%02d", (ticks/60/60), (ticks/60)%60);
-
-        display_somatorios(soma_linha, soma_coluna, font_play_bold_24);
-              
-        for (int i = 0; i < 5; i++)
-        {
-            for (int j = 0; j < 5; j++)
-            {
-                al_draw_bitmap(matriz[i][j].bitmap, matriz[i][j].x, matriz[i][j].y, 0);
-            }
-            
-        }
-
-        for (int i = 0; i < 3; i++)
-        {
-            if (fila_dados[i].ocupada)
-            {
-            
-                for (int j = 0; j < fila_dados[i].qnt_dados; j++)
-                {
-                    al_draw_bitmap(fila_dados[i].bitmap[j], fila_dados[i].x[j], fila_dados[i].y[j], 0);
-                }
-            
-            }
         }
         
         al_draw_text(font_2p_regular_36, BRANCO, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y, 0, "Bônus");
