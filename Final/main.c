@@ -180,6 +180,7 @@ int digitos(int num)
 
 struct celula
 {
+    bool animando;
     bool ocupada;
     int num_dado;
     int cor;
@@ -189,6 +190,8 @@ struct celula
 
 struct dados_gerados
 {
+    bool animando;
+    int frames;
     bool ocupada;
     bool foi_rotacionada;
     int qnt_dados;
@@ -198,6 +201,7 @@ struct dados_gerados
 
     float x[3], y[3];
     float x_origem[3], y_origem[3];
+    float anim_diff_x, anim_diff_y;
     ALLEGRO_BITMAP* bitmap[3];
 
     float click_point_diff_x[3];
@@ -455,6 +459,17 @@ void posiciona_dados(struct dados_gerados fila_dados[], ALLEGRO_BITMAP* red[], A
         }
 
     }
+
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < fila_dados[i].qnt_dados; j++)
+        {
+            fila_dados[i].x_origem[j] = fila_dados[i].x[j];
+            fila_dados[i].y_origem[j] = fila_dados[i].y[j];
+        }
+        
+    }
+    
     
     
 }
@@ -465,6 +480,7 @@ void cria_matriz(struct celula matriz[5][5], ALLEGRO_BITMAP* cell)
     {
         for (int j = 0; j < 5; j++)
         {
+            matriz[i][j].animando = false;
             matriz[i][j].ocupada = false;
             matriz[i][j].bitmap = cell;
 
@@ -623,7 +639,7 @@ int intersec(struct dados_gerados fila[], struct celula matriz[5][5], struct dad
         }
 
 
-        if(encaixe_possivel == fila[a].qnt_dados && fila[a].ocupada == true)
+        if(encaixe_possivel == fila[a].qnt_dados && fila[a].ocupada == true && fila[a].animando == false)
         {
             salva_estado_dados(previous_fila_dados, previous_matriz, fila, matriz);
             fila[a].ocupada = false;
@@ -1017,11 +1033,21 @@ void restaura_jogo_salvo()
     }*/
 }
 
+bool fora_do_lugar(struct dados_gerados fila)
+{
+    return (fabs(fila.x[0] - fila.x_origem[0]) >= 5 || fabs(fila.y[0] - fila.y_origem[0]) >= 5);
+}
+
+float distancia_atual(struct dados_gerados fila)
+{
+    return sqrt((double)((fila.x_origem[0] - fila.x[0])*(fila.x_origem[0] - fila.x[0]) + (fila.y_origem[0] - fila.y[0])*(fila.y_origem[0] - fila.y[0]))) ;
+}
 void jogo(ALLEGRO_DISPLAY* display, int restaura)
 {
     ALLEGRO_FONT* font_2p_regular_18 = al_load_ttf_font("media/fonts/PressStart2P-regular.ttf", 18, 0);
     ALLEGRO_FONT* font_2p_regular_22 = al_load_ttf_font("media/fonts/PressStart2P-regular.ttf", 22, 0);
     ALLEGRO_FONT* font_2p_regular_36 = al_load_ttf_font("media/fonts/PressStart2P-regular.ttf", 36, 0);
+    ALLEGRO_FONT* font_2p_regular_48 = al_load_ttf_font("media/fonts/PressStart2P-regular.ttf", 48, 0);
     ALLEGRO_FONT* font_2p_regular_72 = al_load_ttf_font("media/fonts/PressStart2P-regular.ttf", 72, 0);
     ALLEGRO_FONT* font_play_bold_24 = al_load_ttf_font("media/fonts/Play-bold.ttf", 24, 0);
     ALLEGRO_TIMER* timer_fps = al_create_timer(1.0 / 60.0);
@@ -1114,6 +1140,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     
     for (int i = 0; i < 3; i++)
     {
+        fila_dados[i].animando = false;
         fila_dados[i].ocupada = false;
         fila_dados[i].puxada = false;
     }
@@ -1152,6 +1179,28 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                             fila_dados[i].y[j] = y_mouse - fila_dados[i].click_point_diff_y[j];
                         } 
                     }
+
+                    else if (fila_dados[i].animando)
+                    {
+                        fila_dados[i].frames++;
+
+                        if (fila_dados[i].frames >= 30)
+                        {
+                            fila_dados[i].animando = false;
+                        }
+
+                        float speed_x = (fila_dados[i].anim_diff_x)/30;
+                        float speed_y = (fila_dados[i].anim_diff_y)/30;
+
+                        for (int j = 0; j < fila_dados[i].qnt_dados; j++)
+                        {
+                            fila_dados[i].x[j] = fila_dados[i].x[j] + speed_x;
+                            fila_dados[i].y[j] = fila_dados[i].y[j] + speed_y;
+
+                        }
+                        
+                    }
+                    
                 }
                 
                 
@@ -1212,6 +1261,22 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
 
                     atualiza_matriz(matriz, cell, red, blue, yellow, green, purple);
                 }
+
+                else
+                {
+                    for (int i = 0; i < 3; i++)
+                    {
+                        if (fila_dados[i].ocupada && !fila_dados[i].animando && distancia_atual(fila_dados[i]) >= 5)
+                        {
+                            fila_dados[i].animando = true;
+                            fila_dados[i].frames = 0;
+                            fila_dados[i].anim_diff_x = fila_dados[i].x_origem[0] - fila_dados[i].x[0];
+                            fila_dados[i].anim_diff_y = fila_dados[i].y_origem[0] - fila_dados[i].y[0];
+                        }
+                    }
+                    
+                }
+                
                 
                 int ocupadas = 0;
 
@@ -1243,7 +1308,9 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
         al_draw_filled_rectangle(LARGURA_TELA/2, 0, LARGURA_TELA, ALTURA_TELA, AZUL_MEDIO);
         al_draw_bitmap(background, 0, 0, 0);  
         al_draw_textf(font_2p_regular_72, BRANCO, MATRIZ_ANCORA_X+2.5*LADO_DADO+2*OFFSET_INTRA_DADO, MATRIZ_ANCORA_Y-165, ALLEGRO_ALIGN_CENTRE, "%d", controlador.pont);
-        al_draw_textf(font_2p_regular_36, BRANCO, LARGURA_TELA-LARG_BOTAO_PEQ, OFFSET_BOTAO_PEQ_Y*3+ALT_BOTAO_PEQ, ALLEGRO_ALIGN_LEFT, "%02d:%02d", (ticks/60/60), (ticks/60)%60);
+
+        al_draw_filled_rounded_rectangle(LARGURA_TELA/2+50, 55-30, LARGURA_TELA/2+290+50, 55+70, 10, 10, AZUL_CLARO);
+        al_draw_textf(font_2p_regular_48, BRANCO, LARGURA_TELA/2+50+25, 55, ALLEGRO_ALIGN_LEFT, "%02d:%02d", (ticks/60/60), (ticks/60)%60);
 
         display_somatorios(soma_linha, soma_coluna, font_play_bold_24);
               
