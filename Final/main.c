@@ -796,7 +796,7 @@ int checa_soma(ALLEGRO_DISPLAY* display, struct celula matriz[5][5], int soma_li
         }
         
 
-        if (qnt_ocupadas == 0 && controlador->change)
+        if (qnt_ocupadas == 0 && controlador->change && controlador->tab_concl == false)
         {
             controlador->tab_concl = true;
             controlador->pont += 10;
