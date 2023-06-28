@@ -215,6 +215,7 @@ struct controla_jogo
     bool change;
     int broken;
     int pont;
+    int broken_dice;
 
     bool tab_concl;
     bool multilinha;
@@ -728,6 +729,8 @@ int checa_soma(ALLEGRO_DISPLAY* display, struct celula matriz[5][5], int soma_li
     controlador->change = false;
     controlador->multilinha = false;
     controlador->combo = 0;
+    controlador->broken_dice = 0;
+    controlador->tab_concl = false;
 
     int cont = 0;
 
@@ -745,6 +748,7 @@ int checa_soma(ALLEGRO_DISPLAY* display, struct celula matriz[5][5], int soma_li
                     if (matriz[i][j].ocupada)
                     {
                         (controlador->pont)++;
+                        (controlador->broken_dice)++;
                         (controlador_bonus->pts_rotacao)++;
                     }
                     
@@ -764,6 +768,7 @@ int checa_soma(ALLEGRO_DISPLAY* display, struct celula matriz[5][5], int soma_li
                     if (matriz[i][j].ocupada)
                     {
                         (controlador->pont)++;
+                        (controlador->broken_dice)++;
                         (controlador_bonus->pts_rotacao)++;
                     }
                     
@@ -800,11 +805,6 @@ int checa_soma(ALLEGRO_DISPLAY* display, struct celula matriz[5][5], int soma_li
             controlador_bonus->pts_rotacao += 10;
             controlador_bonus->tabs_concl++;
         }
-
-        else
-        {
-            controlador->tab_concl = false;
-        }
         
         if (controlador->broken > 0 && cont > 0)
         {
@@ -827,7 +827,6 @@ int checa_soma(ALLEGRO_DISPLAY* display, struct celula matriz[5][5], int soma_li
         somatorios(matriz, soma_linha, soma_coluna);
 
     } while (controlador->broken != 0);
-    
     
 }
 
@@ -1196,6 +1195,9 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     bool update = true;
     bool game_over = false;
 
+    bool mostrar_alteracoes = false;
+    int frames_alteracoes = 0;
+
     bool sair_salvando, sair_sem_salvar, jogar_novamente = false;
 
     struct celula matriz[5][5];
@@ -1370,8 +1372,40 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                         
                     }  
                 }
-                
 
+                if (mostrar_alteracoes)
+                {
+                    int line_y_offset = 0;
+                    int ancora_x_alteracoes = MATRIZ_ANCORA_X+2.5*LADO_DADO+2*OFFSET_INTRA_DADO + digitos(controlador.pont)*72 + 10;
+                    frames_alteracoes++;
+
+                    if (frames_alteracoes >= 149)
+                    {
+                        mostrar_alteracoes = false;
+                        frames_alteracoes = 0;
+                    }
+
+                    al_draw_textf(font_play_bold_24, BRANCO, ancora_x_alteracoes, MATRIZ_ANCORA_Y-180+20*line_y_offset, 0, "+ %d", controlador.broken_dice);
+                    line_y_offset++;
+
+                    if (controlador.multilinha)
+                    {
+                        al_draw_text(font_play_bold_24, BRANCO, ancora_x_alteracoes, MATRIZ_ANCORA_Y-175+20*line_y_offset, 0, "+ 7 pts (multilinha)");
+                        line_y_offset++;
+                    }
+
+                    if (controlador.combo)
+                    {
+                        al_draw_textf(font_play_bold_24,  BRANCO, ancora_x_alteracoes, MATRIZ_ANCORA_Y-175+20*line_y_offset, 0, "+ %d pts (combo %dx)", 5*controlador.combo, controlador.combo+1);
+                        line_y_offset++;
+                    }
+
+                    if (controlador.tab_concl)
+                    {
+                        al_draw_textf(font_play_bold_24, BRANCO, ancora_x_alteracoes, MATRIZ_ANCORA_Y-175+20*line_y_offset, 0, "+ 10 pts (tab. concluído)", 5*controlador.combo, controlador.combo+1);
+                    } 
+                }
+                
                 break;
             
             case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
@@ -1422,8 +1456,19 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                     somatorios(matriz, soma_linha, soma_coluna);
                     checa_soma(display, matriz, soma_linha, soma_coluna, &controlador, &controlador_bonus);
                     
+                    if (controlador.change)
+                    {
+                        mostrar_alteracoes = true;
+                    }
+
+                    else
+                    {
+                        mostrar_alteracoes = false;
+                    }
+                    
                     rotacoes = controlador_bonus.pts_rotacao/50;
                     bombas = controlador_bonus.combo_multi/10;
+                    
                     if(controlador_bonus.tabs_concl >= 5)
                     {
                         tem_undo = true;
@@ -1504,9 +1549,9 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
         al_draw_bitmap(progress_bar_green, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS*2+OFFSET_PROGRESS_BARS*4, 0);
         char string_undo[64];
         if (tem_undo)
-            sprintf(string_undo, "Undo: disponível", 0);
+            sprintf(string_undo, "Undo: disponível");
         else
-            sprintf(string_undo, "Undo: indisponível", 0);
+            sprintf(string_undo, "Undo: indisponível");
         al_draw_textf(font_play_bold_24, BRANCO, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS*2+OFFSET_PROGRESS_BARS*3.25, 0, string_undo);
         al_draw_bitmap(botao_undo_mini_grayscale, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + LARG_PROGRESS_BARS_INT + LARG_BOTAO_MINI, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS*2+OFFSET_PROGRESS_BARS*4+10, 0);
 
