@@ -1860,12 +1860,13 @@ void help(ALLEGRO_DISPLAY* display)
     ALLEGRO_FONT* font_2p_regular_24 = al_load_ttf_font("media/fonts/PressStart2P-regular.ttf", 24, 0);
     ALLEGRO_TIMER* timer_fps = al_create_timer(1.0 / 60.0);
     ALLEGRO_BITMAP* pag1 = al_load_bitmap("media/images/pag1.png");
-    ALLEGRO_BITMAP* pag2 = al_load_bitmap("media/images/pag1.png");
-    ALLEGRO_BITMAP* pag3 = al_load_bitmap("media/images/pag1.png");
-    ALLEGRO_BITMAP* pag4 = al_load_bitmap("media/images/pag1.png");
+    ALLEGRO_BITMAP* pag2 = al_load_bitmap("media/images/pag2.png");
+    ALLEGRO_BITMAP* pag3 = al_load_bitmap("media/images/pag3.png");
+    ALLEGRO_BITMAP* pag4 = al_load_bitmap("media/images/pag4.png");
     ALLEGRO_BITMAP* botao_voltar = al_load_bitmap("media/images/buttons/voltar.png");
     ALLEGRO_BITMAP* prox_pag = al_load_bitmap("media/images/buttons/prox_pag.png");
     ALLEGRO_BITMAP* botao_menu = al_load_bitmap("media/images/buttons/menu_peq.png");
+    ALLEGRO_BITMAP* easter_egg_image = al_load_bitmap("media/images/easter_egg.jpg");
     
     ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
     al_register_event_source(queue, al_get_mouse_event_source());
@@ -1878,6 +1879,8 @@ void help(ALLEGRO_DISPLAY* display)
     int click = 0;
     int num = 0;
     int pagina = 1;
+
+    bool easter_egg = false;
 
     bool update = true;
     al_start_timer(timer_fps);
@@ -1898,6 +1901,20 @@ void help(ALLEGRO_DISPLAY* display)
                 x_mouse = state.x;
                 y_mouse = state.y;
                 click = 1;
+                
+                if (pagina == 4)
+                {
+                    if (x_mouse >= 378 && x_mouse <= 516 && y_mouse >= 442 && y_mouse <= 573)
+                    {
+                        easter_egg = true;
+                    }
+                    
+                    else
+                    {
+                        easter_egg = false;
+                    }
+                }
+                
         }               
     
         char contador[32];
@@ -1915,6 +1932,11 @@ void help(ALLEGRO_DISPLAY* display)
                 break;
             case 4:
                 al_draw_bitmap(pag4, 0, 0, 0);
+                if (easter_egg)
+                {
+                    al_draw_bitmap(easter_egg_image, LARGURA_TELA/2-600, ALTURA_TELA/2-393, 0);
+                }
+            
                 break;
         }
 
