@@ -1254,7 +1254,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     bool mostrar_alteracoes = false;
     int frames_alteracoes = 0;
 
-    bool sair_salvando, sair_sem_salvar, jogar_novamente = false;
+    bool sair_salvando = false, sair_sem_salvar = false, jogar_novamente = false;
 
     struct celula matriz[5][5];
     struct celula previous_matriz[5][5];
