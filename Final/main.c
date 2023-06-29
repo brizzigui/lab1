@@ -1183,10 +1183,6 @@ bool restaura_jogo_salvo(struct celula matriz[5][5], struct celula previous_matr
     return true;
 }
 
-bool fora_do_lugar(struct dados_gerados fila)
-{
-    return (fabs(fila.x[0] - fila.x_origem[0]) >= 5 || fabs(fila.y[0] - fila.y_origem[0]) >= 5);
-}
 
 float distancia_atual(struct dados_gerados fila)
 {
@@ -1317,9 +1313,11 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
         if (tem_jogo_salvo)
         {
             atualiza_matriz(matriz, cell, red, blue, yellow, green, purple);
+            somatorios(matriz, soma_linha, soma_coluna);
         }
     }
 
+    salva_estado_dados(previous_fila_dados, previous_matriz, fila_dados, matriz);
     posiciona_dados(fila_dados, red, blue, yellow, green, purple);
 
     al_start_timer(timer_fps);
