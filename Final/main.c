@@ -169,11 +169,18 @@ char menu(ALLEGRO_DISPLAY* display)
 int digitos(int num)
 {
     int qnt = 0;
+
+    if (num == 0)
+    {
+        qnt = 1;
+        return qnt;
+    }
+
     while(num >= 1)
     {
         num = num/10;
         qnt++;
-    }
+    }    
 
     return qnt;
 }
@@ -1684,7 +1691,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
 
         if(game_over)
         {
-            if ((controlador.pont > max_pont || (controlador.pont == max_pont && ticks/60 < tempo_max_pont)) && reset_highscore == false)
+            if ((controlador.pont > max_pont || (controlador.pont == max_pont && ticks/60 < tempo_max_pont) || (controlador.pont == 0 && max_pont == 0)) && reset_highscore == false)
             {
                 reset_highscore = true;
                 max_pont = controlador.pont;
@@ -1735,15 +1742,31 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     al_destroy_bitmap(cell);
     al_destroy_bitmap(botao_menu_peq);
     al_destroy_bitmap(botao_sair);
+    al_destroy_bitmap(botao_sair_peq);
     al_destroy_bitmap(botao_salvar_e_sair);
     al_destroy_bitmap(botao_voltar);
-    al_destroy_bitmap(botao_rotate_mini);
+    al_destroy_bitmap(botao_bomba_mini);    
+    al_destroy_bitmap(botao_bomba_mini_grayscale);
+    al_destroy_bitmap(botao_rotate_mini);    
+    al_destroy_bitmap(botao_rotate_mini_grayscale);
+    al_destroy_bitmap(botao_undo_mini);    
+    al_destroy_bitmap(botao_undo_mini_grayscale);
 
 
     al_destroy_bitmap(progress_bar_blue);
     al_destroy_bitmap(progress_bar_red);
     al_destroy_bitmap(progress_bar_green);
+    al_destroy_bitmap(back_progress_bar_blue);
+    al_destroy_bitmap(back_progress_bar_red);
+    al_destroy_bitmap(back_progress_bar_green);
+
+    al_destroy_bitmap(back_game_over);
+
     al_destroy_event_queue(queue);
+    al_destroy_font(font_2p_regular_18);
+    al_destroy_font(font_2p_regular_22);
+    al_destroy_font(font_2p_regular_36);
+    al_destroy_font(font_2p_regular_48);
     al_destroy_font(font_2p_regular_72);
     al_destroy_font(font_play_bold_24);
     al_destroy_timer(timer_fps);
@@ -1831,12 +1854,27 @@ void record(ALLEGRO_DISPLAY* display)
         }
 
         al_draw_bitmap(background_record, 0, 0, 0);
-        al_draw_textf(font_2p_regular_36, LARANJA, LARGURA_TELA/3-100, ALTURA_TELA/3, ALLEGRO_ALIGN_LEFT, "A pontuação máxima foi de:");
-        al_draw_textf(font_2p_regular_144, LARANJA, LARGURA_TELA/3-100, ALTURA_TELA/2-50, ALLEGRO_ALIGN_LEFT, "%d", max_pont);
-        al_draw_text(font_2p_regular_72, LARANJA, LARGURA_TELA/3-100+150*digitos(max_pont)+10, ALTURA_TELA/2+5, ALLEGRO_ALIGN_LEFT, "pts");
-        al_draw_textf(font_2p_regular_144, LARANJA_ESCURO, LARGURA_TELA/3-100+10, ALTURA_TELA/2-50+10, ALLEGRO_ALIGN_LEFT, "%d", max_pont);
-        al_draw_text(font_2p_regular_72, LARANJA_ESCURO, LARGURA_TELA/3-100+150*digitos(max_pont)+10+5, ALTURA_TELA/2+5+5, ALLEGRO_ALIGN_LEFT, "pts");
-        al_draw_textf(font_2p_regular_36, LARANJA, LARGURA_TELA/3-100, ALTURA_TELA/2+125, ALLEGRO_ALIGN_LEFT, "No tempo de %02d:%02d.", tempo/60, tempo%60);      
+
+        if (foi_jogado)
+        {
+            
+            al_draw_textf(font_2p_regular_36, LARANJA, LARGURA_TELA/3-100, ALTURA_TELA/3, ALLEGRO_ALIGN_LEFT, "A pontuação máxima foi de:");
+            al_draw_textf(font_2p_regular_144, LARANJA, LARGURA_TELA/3-100, ALTURA_TELA/2-50, ALLEGRO_ALIGN_LEFT, "%d", max_pont);
+            al_draw_text(font_2p_regular_72, LARANJA, LARGURA_TELA/3-100+150*digitos(max_pont)+10, ALTURA_TELA/2+5, ALLEGRO_ALIGN_LEFT, "pts");
+            al_draw_textf(font_2p_regular_144, LARANJA_ESCURO, LARGURA_TELA/3-100+10, ALTURA_TELA/2-50+10, ALLEGRO_ALIGN_LEFT, "%d", max_pont);
+            al_draw_text(font_2p_regular_72, LARANJA_ESCURO, LARGURA_TELA/3-100+150*digitos(max_pont)+10+5, ALTURA_TELA/2+5+5, ALLEGRO_ALIGN_LEFT, "pts");
+            al_draw_textf(font_2p_regular_36, LARANJA, LARGURA_TELA/3-100, ALTURA_TELA/2+125, ALLEGRO_ALIGN_LEFT, "No tempo de %02d:%02d.", tempo/60, tempo%60);      
+        }
+
+        else
+        {
+            al_draw_text(font_2p_regular_36, LARANJA, LARGURA_TELA/3-100, ALTURA_TELA/3, ALLEGRO_ALIGN_LEFT, "O jogo ainda não foi jogado");
+            al_draw_text(font_2p_regular_144, LARANJA, LARGURA_TELA/3-100, ALTURA_TELA/2-50, ALLEGRO_ALIGN_LEFT, ":("); 
+            al_draw_text(font_2p_regular_36, LARANJA, LARGURA_TELA/3-100, ALTURA_TELA/2+135, ALLEGRO_ALIGN_LEFT, "Sua pontuação estará aqui");
+            al_draw_text(font_2p_regular_36, LARANJA, LARGURA_TELA/3-100, ALTURA_TELA/2+180, ALLEGRO_ALIGN_LEFT, "quando jogar.");
+        }
+        
+        
 
         bool voltar = botao_pequeno(0+OFFSET_BOTAO_PEQ_X, ALTURA_TELA-ALT_BOTAO_PEQ-OFFSET_BOTAO_PEQ_Y, botao_voltar, x_mouse, y_mouse, click);
 
@@ -1852,6 +1890,17 @@ void record(ALLEGRO_DISPLAY* display)
         }
          
     }
+
+    al_destroy_bitmap(background_record);
+    al_destroy_bitmap(botao_voltar);
+    al_destroy_font(font_2p_regular_36);
+    al_destroy_font(font_2p_regular_48);
+    al_destroy_font(font_2p_regular_72);
+    al_destroy_font(font_2p_regular_144);
+    
+    al_destroy_timer(timer_fps);
+    al_destroy_event_queue(queue);
+
     
 }
 
@@ -1866,7 +1915,7 @@ void help(ALLEGRO_DISPLAY* display)
     ALLEGRO_BITMAP* botao_voltar = al_load_bitmap("media/images/buttons/voltar.png");
     ALLEGRO_BITMAP* prox_pag = al_load_bitmap("media/images/buttons/prox_pag.png");
     ALLEGRO_BITMAP* botao_menu = al_load_bitmap("media/images/buttons/menu_peq.png");
-    ALLEGRO_BITMAP* easter_egg_image = al_load_bitmap("media/images/easter_egg.jpg");
+    ALLEGRO_BITMAP* easter_egg_image = al_load_bitmap("media/images/easter_egg.png");
     
     ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
     al_register_event_source(queue, al_get_mouse_event_source());
@@ -1904,7 +1953,7 @@ void help(ALLEGRO_DISPLAY* display)
                 
                 if (pagina == 4)
                 {
-                    if (x_mouse >= 378 && x_mouse <= 516 && y_mouse >= 442 && y_mouse <= 573)
+                    if (x_mouse >= 378 && x_mouse <= 516 && y_mouse >= 442 && y_mouse <= 573 && easter_egg == false)
                     {
                         easter_egg = true;
                     }
@@ -1934,7 +1983,7 @@ void help(ALLEGRO_DISPLAY* display)
                 al_draw_bitmap(pag4, 0, 0, 0);
                 if (easter_egg)
                 {
-                    al_draw_bitmap(easter_egg_image, LARGURA_TELA/2-600, ALTURA_TELA/2-393, 0);
+                    al_draw_bitmap(easter_egg_image, LARGURA_TELA/2-650, ALTURA_TELA/2-400, 0);
                 }
             
                 break;
@@ -1987,6 +2036,7 @@ void help(ALLEGRO_DISPLAY* display)
     al_destroy_bitmap(botao_voltar);
     al_destroy_bitmap(botao_menu);
     al_destroy_bitmap(prox_pag);
+    al_destroy_bitmap(easter_egg_image);
     al_destroy_font(font_2p_regular_24);
     al_destroy_timer(timer_fps);
     al_destroy_event_queue(queue);
