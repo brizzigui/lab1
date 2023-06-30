@@ -1090,22 +1090,20 @@ void salva_jogo(struct celula matriz[5][5], struct celula previous_matriz[5][5],
     
     for (int a = 0; a < 3; a++)
     {
-        fprintf(save_file, "%d", fila_dados[a].qnt_dados);
+        fprintf(save_file, "%d %d %d %d\n", fila_dados[a].qnt_dados, fila_dados[a].cor, fila_dados[a].rotacao, fila_dados[a].ocupada);
         for (int b = 0; b < fila_dados[a].qnt_dados; b++)
         {
-            fprintf(save_file, " %d", fila_dados[a].numeros[b]);
+            fprintf(save_file, "%d\n", fila_dados[a].numeros[b]);
         }
-        fprintf(save_file, "\n");
     }
 
     for (int a = 0; a < 3; a++)
     {
-        fprintf(save_file, "%d", previous_fila_dados[a].qnt_dados);
+        fprintf(save_file, "%d %d %d %d\n", fila_dados[a].qnt_dados, fila_dados[a].cor, fila_dados[a].rotacao, fila_dados[a].ocupada);  
         for (int b = 0; b < previous_fila_dados[a].qnt_dados; b++)
         {
-            fprintf(save_file, " %d", previous_fila_dados[a].numeros[b]);
+            fprintf(save_file, "%d\n", previous_fila_dados[a].numeros[b]);
         }
-        fprintf(save_file, "\n");
     }
     
     fprintf(save_file, "%d %d\n", controlador.pont, controlador.tab_concl);
@@ -1149,19 +1147,19 @@ bool restaura_jogo_salvo(struct celula matriz[5][5], struct celula previous_matr
 
     for (int a = 0; a < 3; a++)
     {
-        fscanf(save_file, "%d", &fila_dados[a].qnt_dados);
+        fscanf(save_file, "%d %d %d %d", &fila_dados[a].qnt_dados, &fila_dados[a].cor, &fila_dados[a].rotacao, &fila_dados[a].ocupada);
         for (int b = 0; b < fila_dados[a].qnt_dados; b++)
         {
-            fscanf(save_file, " %d", &fila_dados[a].numeros[b]);
+            fscanf(save_file, "%d", &fila_dados[a].numeros[b]);
         }
     }
 
     for (int a = 0; a < 3; a++)
     {
-        fscanf(save_file, "%d", &previous_fila_dados[a].qnt_dados);
+        fscanf(save_file, "%d %d %d %d", &previous_fila_dados[a].qnt_dados, &previous_fila_dados[a].cor, &previous_fila_dados[a].rotacao, &fila_dados[a].ocupada);
         for (int b = 0; b < previous_fila_dados[a].qnt_dados; b++)
         {
-            fscanf(save_file, " %d", &previous_fila_dados[a].numeros[b]);
+            fscanf(save_file, "%d", &previous_fila_dados[a].numeros[b]);
         }
     }
 
@@ -1268,9 +1266,9 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     struct totais previous_controlador_bonus;
     controlador_bonus.pts_rotacao = 0;
     controlador_bonus.combo_multi = 0;
-    controlador_bonus.tabs_concl = 5;
+    controlador_bonus.tabs_concl = 0;
     int rotacoes = 0, bombas = 0;
-    bool tem_undo = true;
+    bool tem_undo = false;
 
     int soma_linha[5] = {}, soma_coluna[5] = {};
 
