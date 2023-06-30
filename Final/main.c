@@ -1268,9 +1268,9 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
     struct totais previous_controlador_bonus;
     controlador_bonus.pts_rotacao = 0;
     controlador_bonus.combo_multi = 0;
-    controlador_bonus.tabs_concl = 0;
+    controlador_bonus.tabs_concl = 5;
     int rotacoes = 0, bombas = 0;
-    bool tem_undo = false;
+    bool tem_undo = true;
 
     int soma_linha[5] = {}, soma_coluna[5] = {};
 
@@ -1456,7 +1456,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
 
                     if (controlador.tab_concl)
                     {
-                        al_draw_textf(font_play_bold_24, BRANCO, ancora_x_alteracoes, MATRIZ_ANCORA_Y-175+20*line_y_offset, 0, "+ 10 pts (tab. concluído)", 5*controlador.combo, controlador.combo+1);
+                        al_draw_textf(font_play_bold_24, BRANCO, ancora_x_alteracoes, MATRIZ_ANCORA_Y-175+20*line_y_offset, 0, "+ 10 pts (tab. concluído)");
                     } 
                 }
                 
@@ -1688,12 +1688,12 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
             bool usou_undo = botao_mini(LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + LARG_PROGRESS_BARS_INT + LARG_BOTAO_MINI, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS*2+OFFSET_PROGRESS_BARS*4+10, botao_undo_mini, x_mouse, y_mouse, click);
             if (usou_undo)
             {
-                tem_undo = false;
-                controlador_bonus.tabs_concl = 0;
-
                 undo_estado_dados(previous_fila_dados, previous_matriz, fila_dados, matriz);
                 controlador = previous_controlador;
                 controlador_bonus = previous_controlador_bonus;
+
+                tem_undo = false;
+                controlador_bonus.tabs_concl = 0;
 
                 posiciona_dados(fila_dados, red, blue, yellow, green, purple);
                 atualiza_matriz(matriz, cell, red, blue, yellow, green, purple);
@@ -1875,7 +1875,7 @@ void record(ALLEGRO_DISPLAY* display)
     ALLEGRO_FONT* font_2p_regular_72 = al_load_ttf_font("media/fonts/PressStart2P-regular.ttf", 72, 0);
     ALLEGRO_FONT* font_2p_regular_144 = al_load_ttf_font("media/fonts/PressStart2P-regular.ttf", 144, 0);
 
-    bool update = false;
+    bool update = true;
     float x_mouse, y_mouse;
     int click = 0;
 
@@ -1973,7 +1973,6 @@ void help(ALLEGRO_DISPLAY* display)
 
     float x_mouse = 0, y_mouse = 0;
     int click = 0;
-    int num = 0;
     int pagina = 1;
 
     bool easter_egg = false;
@@ -2094,7 +2093,7 @@ void sair()
     exit(0);
 }
 
-int main()
+void main()
 {
     srand(time(NULL));
     inicializar();
@@ -2127,9 +2126,4 @@ int main()
                 break;
         }
     }
-
-    al_destroy_display(display);
-
-    return 0;
-
 }
