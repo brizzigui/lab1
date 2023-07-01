@@ -1565,10 +1565,13 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
 
 
             case ALLEGRO_EVENT_KEY_DOWN:
-                 if(event.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
-                 {
+
+                if(event.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
+                {
                     submenu_aberto = !submenu_aberto;
-                 }
+                }
+
+                break;
         }
         
         al_draw_text(font_2p_regular_36, BRANCO, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y, 0, "Bônus");
@@ -1957,6 +1960,7 @@ void help(ALLEGRO_DISPLAY* display)
     ALLEGRO_BITMAP* pag2 = al_load_bitmap("media/images/pag2.png");
     ALLEGRO_BITMAP* pag3 = al_load_bitmap("media/images/pag3.png");
     ALLEGRO_BITMAP* pag4 = al_load_bitmap("media/images/pag4.png");
+    ALLEGRO_BITMAP* pag5 = al_load_bitmap("media/images/pag5.png");
     ALLEGRO_BITMAP* botao_voltar = al_load_bitmap("media/images/buttons/voltar.png");
     ALLEGRO_BITMAP* prox_pag = al_load_bitmap("media/images/buttons/prox_pag.png");
     ALLEGRO_BITMAP* botao_menu = al_load_bitmap("media/images/buttons/menu_peq.png");
@@ -1995,7 +1999,7 @@ void help(ALLEGRO_DISPLAY* display)
                 y_mouse = state.y;
                 click = 1;
                 
-                if (pagina == 4)
+                if (pagina == 5)
                 {
                     if (x_mouse >= 378 && x_mouse <= 516 && y_mouse >= 442 && y_mouse <= 573 && easter_egg == false)
                     {
@@ -2025,6 +2029,9 @@ void help(ALLEGRO_DISPLAY* display)
                 break;
             case 4:
                 al_draw_bitmap(pag4, 0, 0, 0);
+                break;
+            case 5:
+                al_draw_bitmap(pag5, 0, 0, 0);
                 if (easter_egg)
                 {
                     al_draw_bitmap(easter_egg_image, LARGURA_TELA/2-650, ALTURA_TELA/2-400, 0);
@@ -2033,14 +2040,14 @@ void help(ALLEGRO_DISPLAY* display)
                 break;
         }
 
-        sprintf(contador, "Pág. %d/4", pagina);
+        sprintf(contador, "Pág. %d/5", pagina);
         al_draw_text(font_2p_regular_24, BRANCO, LARGURA_TELA-LARG_BOTAO_PEQ-OFFSET_BOTAO_PEQ_X, ALTURA_TELA-ALT_BOTAO_PEQ-OFFSET_BOTAO_PEQ_Y*6, 0, contador);
 
         bool menu = botao_pequeno(OFFSET_BOTAO_PEQ_X, ALTURA_TELA-ALT_BOTAO_PEQ*2-OFFSET_BOTAO_PEQ_Y*2, botao_menu, x_mouse, y_mouse, click);
         bool voltar = botao_pequeno(OFFSET_BOTAO_PEQ_X, ALTURA_TELA-ALT_BOTAO_PEQ-OFFSET_BOTAO_PEQ_Y, botao_voltar, x_mouse, y_mouse, click);
         bool next_page = false;
 
-        if (pagina < 4)
+        if (pagina < 5)
         {
             next_page = botao_pequeno(LARGURA_TELA-OFFSET_BOTAO_PEQ_X-LARG_BOTAO_PEQ, ALTURA_TELA-ALT_BOTAO_PEQ-OFFSET_BOTAO_PEQ_Y, prox_pag, x_mouse, y_mouse, click);
         }
