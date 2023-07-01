@@ -1277,7 +1277,9 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
 
     FILE *high_score;
     high_score = fopen("save_files/high_score.txt", "r");
-    if (high_score == NULL)
+    fscanf(high_score, "%d", &max_pont);
+
+    if (max_pont == -1)
     {
         max_pont = 0;
         tempo_max_pont = 0;
@@ -1285,7 +1287,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
 
     else
     {
-        fscanf(high_score, "%d %d", &max_pont, &tempo_max_pont);
+        fscanf(high_score, "%d", &tempo_max_pont);
     }
 
     fclose(high_score);
@@ -1744,7 +1746,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
                 reset_highscore = true;
                 max_pont = controlador.pont;
                 high_score = fopen("save_files/high_score.txt", "w");
-                fprintf(high_score, "%d %d", max_pont, ticks/60);
+                fprintf(high_score, "%d\n%d", max_pont, ticks/60);
                 fclose(high_score);
             }
             
@@ -1848,7 +1850,8 @@ void record(ALLEGRO_DISPLAY* display)
     FILE *high_score;
     high_score = fopen("save_files/high_score.txt", "r");
 
-    if (high_score == NULL)
+    fscanf(high_score, "%d", &max_pont);
+    if (max_pont == -1)
     {
         foi_jogado = false;
     }
@@ -1856,7 +1859,7 @@ void record(ALLEGRO_DISPLAY* display)
     else
     {
         foi_jogado = true;
-        fscanf(high_score, "%d %d", &max_pont, &tempo);
+        fscanf(high_score, "%d", &tempo);
     }
 
     fclose(high_score);
