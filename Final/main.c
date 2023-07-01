@@ -871,7 +871,7 @@ int checa_soma(ALLEGRO_DISPLAY* display, struct celula matriz[5][5], int soma_li
         }
         
 
-        if(controlador->broken > 1)
+        if(controlador->broken > 1 && controlador->multilinha == false)
         {
             controlador->multilinha = true;
             controlador->pont += 7;
