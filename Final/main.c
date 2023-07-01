@@ -1607,7 +1607,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
             sprintf(string_undo, "Undo: disponível");
         else
             sprintf(string_undo, "Undo: indisponível");
-        al_draw_textf(font_play_bold_24, BRANCO, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS*2+OFFSET_PROGRESS_BARS*3.25, 0, string_undo);
+        al_draw_text(font_play_bold_24, BRANCO, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS*2+OFFSET_PROGRESS_BARS*3.25, 0, string_undo);
         al_draw_bitmap(botao_undo_mini_grayscale, LARGURA_TELA/2 + OFFSET_PROGRESS_BARS + LARG_PROGRESS_BARS_INT + LARG_BOTAO_MINI, MATRIZ_ANCORA_Y+ALTURA_PROGRESS_BARS*2+OFFSET_PROGRESS_BARS*4+10, 0);
 
         for (int i = 0; i < 3; i++)
