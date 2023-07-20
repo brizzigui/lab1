@@ -1016,12 +1016,12 @@ int tem_espaco(struct celula matriz[5][5], struct dados_gerados fila)
     return false;
 }
 
-int checa_game_over(struct celula matriz[5][5], struct dados_gerados fila[3], int rotacoes, int bombas, bool tem_undo)
+int checa_game_over(struct celula matriz[5][5], struct dados_gerados fila[3], int rotacoes, int bombas, bool tem_undo, bool change)
 {
 
     bool tem_jogada;
 
-    if (tem_undo || bombas > 0)
+    if (tem_undo && !change || bombas > 0)
     {
         return false;
     }  
@@ -1737,7 +1737,7 @@ void jogo(ALLEGRO_DISPLAY* display, int restaura)
         }
 
 
-        game_over = checa_game_over(matriz, fila_dados, rotacoes, tem_undo, bombas);
+        game_over = checa_game_over(matriz, fila_dados, rotacoes, tem_undo, bombas, controlador.change);
 
         if(game_over)
         {
